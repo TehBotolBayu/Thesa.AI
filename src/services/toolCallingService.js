@@ -28,10 +28,8 @@ export const namesToFunctions = {
     try {
       let urlfetch = process.env.SEMANTIC_SCHOLAR_API_URL + SEARCH_URL(query);
       urlfetch = urlfetch.replace(/ /g, "%20");
-      console.log("Fetching URL:", urlfetch);
       const res = await fetch(urlfetch);
       const data = await res.json();
-      console.log("Papers found:", data?.data.length || 0);
       return JSON.stringify(
         data.data.map((paper) => ({
           title: paper.title,

@@ -114,7 +114,6 @@ const ResizablePanels = () => {
       });
 
       let aiData = await aiResponseRes.json();
-      console.log("aiData: ", JSON.stringify(aiData, null, 2));
       if (aiData?.data) {
         const aiMessage = {
           id: Date.now().toString() + "-ai",
@@ -123,7 +122,6 @@ const ResizablePanels = () => {
           created_at: new Date(),
         };
         if (aiData?.data?.toolResult) {
-          console.log("Setting paper data: ", aiData?.data?.toolResult);
           setPaperData(aiData?.data?.toolResult);
         }
         setMessages((prev) => [...prev, aiMessage]);

@@ -46,8 +46,6 @@ export async function getAIPaperResponse(userPrompt, chatHistory = [
     role: "system", content: systemPrompt
   }
 ]) {
-  console.log("chatHistory")
-  console.log(JSON.stringify(chatHistory, null, 2))
   const memory = chatHistory.map((msg) => {
     switch (msg.type) {
       case "user":
@@ -62,9 +60,6 @@ export async function getAIPaperResponse(userPrompt, chatHistory = [
   });
 
   let messages = [...memory];
-
-  console.log(messages)
-
   // Step A: Send user query to Mistral with tools
   let response = await mistralClient.chat.complete({
     model: "mistral-large-latest",
@@ -103,7 +98,6 @@ export async function getAIPaperResponse(userPrompt, chatHistory = [
     messages,
   });
 
-  console.log("response result: ", JSON.stringify(response, null, 2))
   return {
     finalAnswer: response.choices[0].message.content,
     toolResult: JSON.parse(functionResult), // raw data from API
