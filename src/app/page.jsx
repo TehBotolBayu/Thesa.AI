@@ -149,11 +149,11 @@ const ResizablePanels = () => {
     >
       {/* Left Panel */}
       <div
-        className="bg-gray-100 h-full overflow-auto"
+        className="bg-chatbg h-full overflow-auto"
         style={{ width: paperData ? leftWidth : "100%" }}
       >
         <div
-          className={`w-full bg-chatbg  relative flex flex-col h-screen  overflow-hidden py-8 px-16  ${
+          className={`w-full relative flex flex-col h-screen  overflow-hidden py-8 md:px-16 px-4  max-w-5xl mx-auto ${
             !(messages && messages.length > 0) && "justify-center"
           }`}
         >
@@ -202,8 +202,8 @@ const ResizablePanels = () => {
           </div>
 
           {/* Input Area - FIXED: Removed sticky positioning that can cause issues */}
-          <div className="chatinputarea  ">
-            <div className="border-t  bg-secondary backdrop-blur-sm rounded-md container mx-auto px-4 py-4 max-w-4xl">
+          <div className="chatinputarea  w-full ">
+            <div className="border-t  bg-secondary backdrop-blur-sm rounded-md container mx-auto p-4 ">
               <div className="flex gap-3">
                 <Input
                   value={inputMessage}
