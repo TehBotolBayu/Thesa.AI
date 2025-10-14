@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   toolbarPlugin,
@@ -21,9 +21,10 @@ import {
   markdownShortcutPlugin,
   SandpackConfig,
   MDXEditor,
-} from '@mdxeditor/editor'
-import { useCallback } from 'react'
-import { debounce } from 'lodash'
+  DiffSourceToggleWrapper,
+} from "@mdxeditor/editor";
+import { useCallback } from "react";
+import { debounce } from "lodash";
 
 const defaultSnippetContent = `
 export default function App() {
@@ -34,61 +35,77 @@ export default function App() {
     </div>
   );
 }
-`.trim()
+`.trim();
 
 const reactSandpackConfig = {
-  defaultPreset: 'react',
+  defaultPreset: "react",
   presets: [
     {
-      label: 'React',
-      name: 'react',
-      meta: 'live',
-      sandpackTemplate: 'react',
-      sandpackTheme: 'light',
-      snippetFileName: '/App.js',
-      snippetLanguage: 'jsx',
+      label: "React",
+      name: "react",
+      meta: "live",
+      sandpackTemplate: "react",
+      sandpackTheme: "light",
+      snippetFileName: "/App.js",
+      snippetLanguage: "jsx",
       initialSnippetContent: defaultSnippetContent,
     },
   ],
-}
-const allPlugins = (diffMarkdown) => [
-  toolbarPlugin({ toolbarContents: () => <KitchenSinkToolbar /> }),
+};
+
+const allPlugins = (diffMarkdown, modeState) => [
+  toolbarPlugin({
+    toolbarContents: () => <KitchenSinkToolbar />,
+  }),
   listsPlugin(),
   quotePlugin(),
   headingsPlugin(),
   linkPlugin(),
   linkDialogPlugin(),
-  // eslint-disable-next-line @typescript-eslint/require-await
-  imagePlugin({ imageUploadHandler: async () => '/sample-image.png' }),
+  imagePlugin({ imageUploadHandler: async () => "/sample-image.png" }),
   tablePlugin(),
   thematicBreakPlugin(),
   frontmatterPlugin(),
-  codeBlockPlugin({ defaultCodeBlockLanguage: 'txt' }),
+  codeBlockPlugin({ defaultCodeBlockLanguage: "txt" }),
   sandpackPlugin({ sandpackConfig: reactSandpackConfig }),
-  codeMirrorPlugin({ codeBlockLanguages: { js: 'JavaScript', css: 'CSS', txt: 'text', tsx: 'TypeScript' } }),
+  codeMirrorPlugin({
+    codeBlockLanguages: {
+      js: "JavaScript",
+      css: "CSS",
+      txt: "Text",
+      tsx: "TypeScript",
+    },
+  }),
   directivesPlugin({ directiveDescriptors: [AdmonitionDirectiveDescriptor] }),
-  diffSourcePlugin({ viewMode: 'rich-text', diffMarkdown }),
-  markdownShortcutPlugin(),
-]
 
-export default function DemoEditor({ markdown, setDocData }) {
+  // ✅ KEY PART
+  diffSourcePlugin({
+    viewMode: modeState, // ensures visual diff view
+    diffMarkdown, // previous markdown version
+    renderDiff: true, // 👈 ensures rendered comparison, not text
+  }),
+
+  markdownShortcutPlugin(),
+];
+
+export default function DemoEditor({
+  markdown,
+  diffMarkdown,
+  setDocData,
+  modeState,
+}) {
   const handleChange = useCallback(
-    debounce((value) => {
-      if(setDocData) {
-        setDocData(value)
-      }
-    }, 300), // updates every 300ms
+    debounce((value) => setDocData?.(value), 300),
     []
-  )
+  );
 
   return (
     <MDXEditor
+    key={modeState}
       markdown={markdown}
-      className="full-demo-mdxeditor"
       contentEditableClassName="prose max-w-full font-sans"
-      plugins={allPlugins(markdown)}
-
+      plugins={allPlugins(diffMarkdown, modeState)}
       onChange={handleChange}
     />
-  )
+  );
 }

@@ -228,3 +228,11 @@ code {
   font-family: 'Courier New', Courier, monospace;
 }
 
+ins {
+  background-color: #d1fae5; /* light green for additions */
+  text-decoration: none;
+}
+del {
+  background-color: #fee2e2; /* light red for deletions */
+  text-decoration: line-through;
+}

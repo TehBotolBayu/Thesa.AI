@@ -140,7 +140,7 @@ export const ChatMessage = ({ message, ...props }) => {
       >
         {!isUser && (
           <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-chatbg">
-            <GraduationCap size={24}/>
+            <GraduationCap size={24} />
           </div>
         )}
 
@@ -194,17 +194,19 @@ export const ChatMessage = ({ message, ...props }) => {
               </ReactMarkdown>
             )}
           </div>
-          <p
-            className={cn(
-              "text-xs mt-1 opacity-70",
-              isUser ? "text-primaryDark" : "text-primaryDark"
-            )}
-          >
-            {time?.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </p>
+          {isUser && (
+            <p
+              className={cn(
+                "text-xs mt-1 opacity-70",
+                isUser ? "text-primaryDark" : "text-primaryDark"
+              )}
+            >
+              {time?.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+          )}
         </div>
 
         {isUser && (

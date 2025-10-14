@@ -36,7 +36,10 @@ const ResizablePanels = () => {
   const pathname = usePathname();
   const id = pathname.split("/").pop();
 
+  const [viewMode, setViewMode] = useState("rich-text");
+
   const [leftWidth, setLeftWidth] = useState(300); // starting width
+  const [rightWidth, setrightWidth] = useState(400);
   const containerRef = useRef(null);
   const isDragging = useRef(false);
   const router = useRouter();
@@ -59,6 +62,8 @@ const ResizablePanels = () => {
     setIsSaving,
     isSaved,
     setIsSaved,
+    oldDocData,
+    setOldDocData,
   } = useDocData();
 
   useEffect(() => {
@@ -133,12 +138,11 @@ const ResizablePanels = () => {
   useEffect(() => {
     (() => {
       const containerRect = containerRef.current.getBoundingClientRect();
-      
+
       if (openProp.state == "expanded") {
-        
-        setLeftWidth((p) => p - 256);
+        setrightWidth(200)
+        setLeftWidth('50%');
       } else {
-        
         setLeftWidth((p) => p + 256);
       }
     })();
@@ -186,8 +190,9 @@ const ResizablePanels = () => {
     const containerRect = containerRef.current.getBoundingClientRect();
     const newWidth = e.clientX - containerRect.left; // distance from container left
     if (newWidth > 100 && newWidth < containerRect.width - 400) {
-      // 
+      //
       if (openProp.state == "expanded") {
+        if(newWidth + 256 >= containerRect.width - 656) return;
         setLeftWidth((p) => p - 256);
       }
       setLeftWidth(newWidth);
@@ -218,7 +223,6 @@ const ResizablePanels = () => {
     });
 
     if (messages && messages.length > 0) {
-      
       setMessages((prev) => [...prev, userMessage]);
     } else {
       setMessages([userMessage]);
@@ -264,17 +268,20 @@ const ResizablePanels = () => {
       } else {
         throw new Error(aiResponseRes.error);
       }
-      
+
       if (aiData?.data) {
         let aiMessage = null;
         if (mode === "writer") {
+          setOldDocData(docData);
           setDocData(aiData?.data?.content);
+          setViewMode("diff");
           aiMessage = {
             id: Date.now().toString() + "-ai",
             message: aiData?.data?.response,
             sender: "assistant",
             created_at: new Date(),
           };
+          setActiveTab("editor");
         } else {
           aiMessage = {
             id: Date.now().toString() + "-ai",
@@ -303,7 +310,6 @@ const ResizablePanels = () => {
         throw Error("No ai response");
       }
     } catch (error) {
-      
       console.error("Error in chat flow:", error);
     }
     setIsLoading(false);
@@ -343,6 +349,19 @@ const ResizablePanels = () => {
       return null;
     }
   }
+
+  const childRef = useRef();
+
+  const rejectChanges = () => {
+    setDocData(oldDocData);
+    setOldDocData("");
+    setViewMode("rich-text");
+  };
+
+  const acceptChanges = () => {
+    setOldDocData("");
+    setViewMode("rich-text");
+  };
 
   return (
     <div className="h-[calc(100vh-46px)]">
@@ -385,7 +404,6 @@ const ResizablePanels = () => {
               className="bg-chatbg h-full overflow-auto"
               style={{ width: leftWidth }}
             >
-              {/* <LiveDemoEditor markdown={docData || "Write something..."} /> */}
               <div className="bg-gray-100 px-6 py-4 ">
                 <h1 className="text-xl font-bold ">
                   Academic Paper Information
@@ -455,7 +473,10 @@ const ResizablePanels = () => {
               </div>
               <LiveDemoEditor
                 markdown={docData || "Write something..."}
+                diffMarkdown={oldDocData}
                 setDocData={setDocData}
+                modeState={viewMode}
+                ref={childRef}
               />
               {/* <divv */}
             </div>
@@ -469,7 +490,9 @@ const ResizablePanels = () => {
 
         {/* first Panel */}
         <div
-          className="flex-1 h-full overflow-auto"
+          className={`flex-1 h-full overflow-auto`}
+          style={{ width: rightWidth }}
+
           // style={{ width: paperData || docData ? leftWidth : "100%" }}
         >
           <div
@@ -505,6 +528,27 @@ const ResizablePanels = () => {
                     {messages?.map((message) => (
                       <ChatMessage key={message.id} message={message} />
                     ))}
+
+                    {oldDocData && (
+                      <div className="mx-15 flex flex-row gap-2 -mt-6">
+                        <Button
+                          className="bg-red-500 hover:bg-red-500/90 text-white"
+                          onClick={() => {
+                            rejectChanges();
+                          }}
+                        >
+                          Reject
+                        </Button>
+                        <Button
+                          className="bg-primarylight hover:bg-primarylight/90 text-white"
+                          onClick={() => {
+                            acceptChanges();
+                          }}
+                        >
+                          Accept
+                        </Button>
+                      </div>
+                    )}
 
                     {isLoading && (
                       <div className="flex justify-start">

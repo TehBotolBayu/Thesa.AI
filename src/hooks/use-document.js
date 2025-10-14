@@ -3,7 +3,8 @@
 import { useState } from "react";
 
 export function useDocData() {
-  const [docData, setDocData] = useState();
+  const [docData, setDocData] = useState('');
+  const [oldDocData, setOldDocData] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -38,5 +39,6 @@ export function useDocData() {
     isSaving,
     isSaved,
     setIsSaved,
+    oldDocData, setOldDocData
   };
 }
