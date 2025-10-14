@@ -1,7 +1,32 @@
-import React from "react";
+import React, { useEffect } from "react";
+import './styles.css';
 
-const AcademicPaperTable = ({ tableData }) => {
+const AcademicPaperTable = ({ tableData, selectedPapers, setSelectedPapers }) => {
+  useEffect(() =>{
+    
+    
+  }, [])
+
   const columns = [
+    {
+      header: " ",
+      key: "id",
+      className: "w-1/4",
+      render: (value) => (
+        <>
+        {
+          selectedPapers && (
+            <input 
+            className="cursor-pointer"
+            type="checkbox" 
+            name="tomato" 
+            checked={selectedPapers.includes(value)} 
+            onChange={() => setSelectedPapers([...selectedPapers, value])}
+            />
+          )}
+        </>
+      ),
+    },
     {
       header: "Title",
       key: "title",
@@ -58,9 +83,12 @@ const AcademicPaperTable = ({ tableData }) => {
       key: "pdfUrl",
       className: "w-1/6",
       render: (value) => (
-        <a
-          href={value}
-          target="_blank"
+        <>
+        {
+          value && (
+            <a
+            href={value}
+            target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-150 text-sm break-all"
         >
@@ -77,8 +105,12 @@ const AcademicPaperTable = ({ tableData }) => {
               d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
             ></path>
           </svg>
-          View PDF
+          <p className="text-sm whitespace-nowrap">
+            View PDF
+          </p>
         </a>
+          )}
+        </>
       ),
     },
     {
@@ -101,11 +133,11 @@ const AcademicPaperTable = ({ tableData }) => {
   ];
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50 overflow-x-auto overflow-y-hidden">
       {tableData && (
         <div className="max-w-6xl mx-auto">
-          <div className="bg-white overflow-hidden">
-            <div className="overflow-x-auto">
+          <div className="bg-white">
+            <div className="">
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-100">
