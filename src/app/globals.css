@@ -3,6 +3,7 @@
 @import '../../node_modules/@mdxeditor/editor/dist/style.css';
 @plugin "@tailwindcss/typography";
 
+
 :root {
   --primary: #9a9a9a;
   --primaryDark: #f3f0ff;
@@ -222,5 +223,8 @@ button {
   }
 }
 
-
+code {
+  background-color: #f0f0f0;
+  font-family: 'Courier New', Courier, monospace;
+}
 

@@ -22,6 +22,8 @@ import {
   SandpackConfig,
   MDXEditor,
 } from '@mdxeditor/editor'
+import { useCallback } from 'react'
+import { debounce } from 'lodash'
 
 const defaultSnippetContent = `
 export default function App() {
@@ -69,13 +71,24 @@ const allPlugins = (diffMarkdown) => [
   markdownShortcutPlugin(),
 ]
 
-export default function DemoEditor({ markdown }) {
+export default function DemoEditor({ markdown, setDocData }) {
+  const handleChange = useCallback(
+    debounce((value) => {
+      if(setDocData) {
+        setDocData(value)
+      }
+    }, 300), // updates every 300ms
+    []
+  )
+
   return (
     <MDXEditor
       markdown={markdown}
       className="full-demo-mdxeditor"
       contentEditableClassName="prose max-w-full font-sans"
       plugins={allPlugins(markdown)}
+
+      onChange={handleChange}
     />
   )
 }
