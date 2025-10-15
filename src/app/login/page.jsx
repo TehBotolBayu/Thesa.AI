@@ -20,8 +20,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Loader } from "lucide-react";
+import { useAuth } from "@/components/authProvider";
 
 const LoginPage = () => {
+  const { refreshUserData } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -76,7 +78,9 @@ const LoginPage = () => {
       }
       if (data) {
         setLoading(false);
+        await refreshUserData();
         router.push("/");
+        router.refresh();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");

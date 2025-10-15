@@ -286,7 +286,7 @@ const ResizablePanels = () => {
           </button>
         </div>
         <div className="flex space-x-8 ">
-
+            
           {
             !user &&
           <a
@@ -375,7 +375,7 @@ const ResizablePanels = () => {
               {(!messages || messages.length <= 0) && (
                 <div className="flex flex-row justify-center items-center ">
                   <h1 className="text-2xl font-semibold text-primary">
-                    How can I help you?
+                    How can I help you? {user ? user.email : 'wawa'}
                   </h1>
                 </div>
               )}

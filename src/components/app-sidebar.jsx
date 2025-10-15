@@ -26,7 +26,7 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { user, isLoading: authLoading, profile } = useAuth();
+  const { user, isLoading: authLoading, profile, logout, refreshUserData } = useAuth();
   const router = useRouter();
   const pathname = usePathname()
   const [chatData, setChatData] = useState([]);
@@ -42,8 +42,6 @@ export function AppSidebar() {
       }
       const data = await response.json();
       if(data){
-        
-        
         setChatData(data);
       } else {
         console.error("Error fetching chat data");
@@ -107,16 +105,20 @@ export function AppSidebar() {
             {user ? (
               <>
                 <SidebarMenuButton asChild>
-                  <a href="/profile">
+                  <a href="#">
                     <User />
                     {profile?.fullName}
                   </a>
                 </SidebarMenuButton>
                 <SidebarMenuButton asChild>
-                  <a href="/logout">
+                  <button onClick={() => {
+                    logout();
+                    refreshUserData();
+                    setChatData([]);
+                  }}>
                     <LogOutIcon />
                     Log Out
-                  </a>
+                  </button>
                 </SidebarMenuButton>
               </>
             ) : (
