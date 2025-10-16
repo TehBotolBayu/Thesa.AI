@@ -110,16 +110,6 @@ const ResizablePanels = () => {
   };
 
   const initChatData = async (documentId) => {
-    if (localStorage.getItem("thesa-firstMessage")) {
-      handleSendMessage(
-        localStorage.getItem("thesa-firstMessage").slice(1, -1),
-        documentId
-      );
-      localStorage.removeItem("thesa-firstMessage");
-
-      setFetchStatus("success");
-      return;
-    }
     try {
       const response = await fetch("/api/conversations/" + documentId);
       const conversationdata = await response.json();
@@ -205,7 +195,7 @@ const ResizablePanels = () => {
     document.removeEventListener("mouseup", handleMouseUp);
   };
 
-  const handleSendMessage = async (message, documentId = null) => {
+  const handleSendMessage = async () => {
     if (!inputMessage.trim() && !message) return;
 
     const userMessage = {
@@ -216,7 +206,7 @@ const ResizablePanels = () => {
     };
 
     const result = await sendMessage({
-      chatbot_id: documentId || chatbotId,
+      chatbot_id: chatbotId,
       message: inputMessage || message,
       sender: "user",
       session_id: Date.now().toString(),
@@ -245,7 +235,7 @@ const ResizablePanels = () => {
       const body = {
         serialized: [{ type: "system", content: systemPrompt }, ...serialized],
         message: userMessage.message,
-        chatbotId: documentId || chatbotId,
+        chatbotId: chatbotId,
       };
 
       let aiResponseRes = null;
@@ -292,7 +282,7 @@ const ResizablePanels = () => {
         }
 
         const result = await sendMessage({
-          chatbot_id: documentId || chatbotId,
+          chatbot_id: chatbotId,
           message: aiMessage.message,
           sender: "assistant",
           session_id: Date.now().toString(),

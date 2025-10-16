@@ -4,56 +4,139 @@ import AcademicPaperTable from "@/components/paperTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { systemPrompt } from "@/const/ai";
-import { GraduationCap, Pencil, Send } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {
+  CircleCheck,
+  DownloadIcon,
+  GraduationCap,
+  Loader,
+  Plus,
+  Save,
+  Send,
+  Trash,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { useSidebar } from "@/components/ui/sidebar";
-import { useEditor } from "@/hooks/use-editor";
-import { FileText, MessageSquare, Search } from "lucide-react";
-import dynamic from "next/dynamic";
-import { Select } from "radix-ui";
-import { SelectTrigger, SelectValue } from "@radix-ui/react-select";
 import DropdownSelect from "@/components/ui/dropdownSelect";
-import { usePathname } from "next/navigation";
-import { useSearchParams } from "next/navigation";
-
+import { useSidebar } from "@/components/ui/sidebar";
+import { usePaperData } from "@/hooks/usePaperData";
+import { FileText, Search } from "lucide-react";
+import dynamic from "next/dynamic";
+import { usePathname, useRouter, redirect } from "next/navigation";
 import { useAuth } from "@/components/authProvider";
+import { useDocData } from "@/hooks/use-document";
+
 const LiveDemoEditor = dynamic(
   () => import("@/app/editor/components/DemoEditor"),
   { ssr: false }
 );
 
 const ResizablePanels = () => {
-  const pathname = usePathname();
   const { user, isLoading: authLoading, profile } = useAuth();
 
+  const pathname = usePathname();
+  const id = pathname.split("/").pop();
+
+  const [viewMode, setViewMode] = useState("rich-text");
+
   const [leftWidth, setLeftWidth] = useState(300); // starting width
+  const [rightWidth, setrightWidth] = useState(400);
   const containerRef = useRef(null);
   const isDragging = useRef(false);
-  const [paperData, setPaperData] = useState();
   const router = useRouter();
   const [messages, setMessages] = useState();
   const [fetchStatus, setFetchStatus] = useState("loading");
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  // 👇 ref for scrolling - only use one ref for consistency
+
   const chatContainerRef = useRef(null);
   const [activeTab, setActiveTab] = useState("chat");
-  const [message, setMessage] = useState("");
-  const [editorContent, setEditorContent] = useState("");
-  const [selectedChat, setSelectedChat] = useState(0);
   const [mode, setMode] = useState("literature");
-  const [chatbotId, setChatbotId] = useState(0);
-  const { docData, setDocData } = useEditor();
+  const [chatbotId, setChatbotId] = useState(null);
   const openProp = useSidebar();
+
+  const {
+    saveDocument,
+    docData,
+    setDocData,
+    isSaving,
+    setIsSaving,
+    isSaved,
+    setIsSaved,
+    oldDocData,
+    setOldDocData,
+  } = useDocData();
+
+  useEffect(() => {
+    const id = pathname.split("/").pop();
+    if (id) setChatbotId(id);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (isSaved) {
+      setTimeout(() => {
+        setIsSaved(false);
+      }, 3000);
+    }
+  }, [isSaved]);
+
+  const {
+    deletePapers,
+    paperData,
+    setPaperData,
+    selectedPapers,
+    setSelectedPapers,
+  } = usePaperData();
+
+  const fetchDocData = async (chatbotid) => {
+    const response = await fetch("/api/chatbot/" + chatbotid);
+    const data = await response.json();
+    if (data.created_by !== user.id) {
+      redirect("/");
+    }
+    setDocData(data.document);
+    return true;
+  };
+
+  const fetchPaperData = async (id) => {
+    const response = await fetch("/api/papers/chatbot/" + id);
+    const paperData = await response.json();
+    setPaperData(paperData);
+  };
+
+  const initChatData = async (documentId) => {
+    if (localStorage.getItem("thesa-firstMessage")) {
+      handleSendMessage(
+        localStorage.getItem("thesa-firstMessage").slice(1, -1),
+        documentId
+      );
+      localStorage.removeItem("thesa-firstMessage");
+
+      setFetchStatus("success");
+      return;
+    }
+    try {
+      const response = await fetch("/api/conversations/" + documentId);
+      const conversationdata = await response.json();
+
+      if (response) {
+        setMessages(conversationdata);
+        setFetchStatus("success");
+      } else {
+        setFetchStatus("error");
+      }
+    } catch (error) {
+      setFetchStatus("error");
+    }
+  };
 
   useEffect(() => {
     (() => {
-      const containerRect = containerRef.current.getBoundingClientRect(); 
+      const containerRect = containerRef.current.getBoundingClientRect();
+
       if (openProp.state == "expanded") {
-        setLeftWidth((p) => p - 256);
-      } else { 
+        setrightWidth(200);
+        setLeftWidth("50%");
+      } else {
         setLeftWidth((p) => p + 256);
       }
     })();
@@ -64,16 +147,6 @@ const ResizablePanels = () => {
       setActiveTab("research");
     }
   }, [paperData]);
-
-  useEffect(() => {
-    if (docData && docData.length > 0) {
-      setActiveTab("editor");
-    }
-  }, [docData]);
-
-  useEffect(() => {
-    setFetchStatus("loaded");
-  }, []);
 
   useEffect(() => {
     const scrollToBottom = () => {
@@ -110,8 +183,10 @@ const ResizablePanels = () => {
     if (!isDragging.current || !containerRef.current) return;
     const containerRect = containerRef.current.getBoundingClientRect();
     const newWidth = e.clientX - containerRect.left; // distance from container left
-    if (newWidth > 100 && newWidth < containerRect.width - 400) { 
+    if (newWidth > 100 && newWidth < containerRect.width - 400) {
+      //
       if (openProp.state == "expanded") {
+        if (newWidth + 256 >= containerRect.width - 656) return;
         setLeftWidth((p) => p - 256);
       }
       setLeftWidth(newWidth);
@@ -124,11 +199,27 @@ const ResizablePanels = () => {
     document.removeEventListener("mouseup", handleMouseUp);
   };
 
+  const newChatBotId = useRef('');
+
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
-    if (user) {
-      localStorage.setItem("thesa-firstMessage", JSON.stringify(inputMessage));
-      // create new chat
+
+    const userMessage = {
+      id: Date.now().toString(),
+      message: inputMessage || message,
+      sender: "user",
+      created_at: new Date(),
+    };
+
+    if (messages && messages.length > 0) {
+      setMessages((prev) => [...prev, userMessage]);
+    } else {
+      setMessages([userMessage]);
+    }
+    setInputMessage("");
+    setIsLoading(true);
+
+    if (user && (!chatbotId || newChatBotId.current)) {
       try {
         const response = await fetch("/api/chatbot", {
           method: "POST",
@@ -149,32 +240,24 @@ const ResizablePanels = () => {
         }
 
         const data = await response.json();
-        router.push(`/c/${data.id}`);
-
-        return data;
-        // goes to the c/id page
-        // save the message to the local storage
+        // bug ai not answering after user send message
+        newChatBotId.current = data.id;
+        window.history.pushState(undefined, "Title", `/c/${data.id}`);
       } catch (err) {
         console.error("Error posting message:", err.message);
         return null;
       }
+    } else {
+      router.push("/login");
       return;
     }
 
-    const userMessage = {
-      id: Date.now().toString(),
+    const result = await sendMessage({
+      chatbot_id: chatbotId || newChatBotId.current,
       message: inputMessage || message,
       sender: "user",
-      created_at: new Date(),
-    };
-
-    if (messages && messages.length > 0) { 
-      setMessages((prev) => [...prev, userMessage]);
-    } else {
-      setMessages([userMessage]);
-    }
-    setInputMessage("");
-    setIsLoading(true);
+      session_id: Date.now().toString(),
+    });
 
     try {
       // prepare serialized messages
@@ -212,17 +295,20 @@ const ResizablePanels = () => {
         aiData = await aiResponseRes.json();
       } else {
         throw new Error(aiResponseRes.error);
-      } 
+      }
       if (aiData?.data) {
         let aiMessage = null;
         if (mode === "writer") {
+          setOldDocData(docData);
           setDocData(aiData?.data?.content);
+          setViewMode("diff");
           aiMessage = {
             id: Date.now().toString() + "-ai",
             message: aiData?.data?.response,
             sender: "assistant",
             created_at: new Date(),
           };
+          setActiveTab("editor");
         } else {
           aiMessage = {
             id: Date.now().toString() + "-ai",
@@ -231,6 +317,13 @@ const ResizablePanels = () => {
             created_at: new Date(),
           };
         }
+
+        const result = await sendMessage({
+          chatbot_id: chatbotId || newChatBotId.current,
+          message: aiMessage.message,
+          sender: "assistant",
+          session_id: Date.now().toString(),
+        });
 
         if (aiData?.data?.toolResult) {
           if (paperData && paperData.length > 0) {
@@ -243,13 +336,14 @@ const ResizablePanels = () => {
       } else {
         throw Error("No ai response");
       }
-    } catch (error) { 
+    } catch (error) {
       console.error("Error in chat flow:", error);
     }
     setIsLoading(false);
 
     return;
   };
+
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -258,10 +352,51 @@ const ResizablePanels = () => {
     }
   };
 
+  async function sendMessage({ chatbot_id, message, sender, session_id }) {
+    try {
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatbot_id,
+          message,
+          sender,
+          session_id,
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to send message");
+      }
+
+      const data = await res.json();
+      return data; // new conversation row
+    } catch (err) {
+      console.error("Error posting message:", err.message);
+      return null;
+    }
+  }
+
+  const childRef = useRef();
+
+  const rejectChanges = () => {
+    setDocData(oldDocData);
+    setOldDocData("");
+    setViewMode("rich-text");
+  };
+
+  const acceptChanges = () => {
+    setOldDocData("");
+    setViewMode("rich-text");
+  };
+
   return (
-    <div className="h-[calc(100vh-46px)] pt-4">
-      <nav className="bg-white border-b border-gray-200 px-6 flex flex-row justify-between items-center">
-        <div className="flex space-x-8 ">
+    <div className="h-[calc(100vh-46px)]">
+      <nav className="bg-white border-b border-gray-200 px-6">
+        <div className="flex space-x-8">
           <button
             onClick={() => setActiveTab("research")}
             className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
@@ -285,21 +420,8 @@ const ResizablePanels = () => {
             Document Editor
           </button>
         </div>
-        <div className="flex space-x-8 ">
-            
-          {
-            !user &&
-          <a
-          href="/login"
-          >
-            <Button className="bg-primarylight text-white">
-
-            Log In
-            </Button>
-          </a>
-          }
-        </div>
       </nav>
+
       <div
         ref={containerRef}
         className="flex w-full w-max-screen border h-full"
@@ -312,13 +434,33 @@ const ResizablePanels = () => {
               className="bg-chatbg h-full overflow-auto"
               style={{ width: leftWidth }}
             >
-              {/* <LiveDemoEditor markdown={docData || "Write something..."} /> */}
-              <div className="bg-primarylight px-6 py-4 ">
-                <h1 className="text-xl font-bold text-white">
+              <div className="bg-gray-100 px-6 py-4 ">
+                <h1 className="text-xl font-bold ">
                   Academic Paper Information
                 </h1>
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    className="bg-white text-black border-gray-300 border"
+                    onClick={deletePapers}
+                  >
+                    <Trash size={16} />
+                    Delete Papers
+                  </Button>
+                  {/* <Button className="bg-white text-black border-gray-300 border">
+                    <Plus size={16} />
+                    Add Column
+                  </Button>
+                  <Button className="bg-white text-black border-gray-300 border">
+                    <DownloadIcon size={16} />
+                    Export
+                  </Button> */}
+                </div>
               </div>
-              <AcademicPaperTable tableData={paperData} />
+              <AcademicPaperTable
+                tableData={paperData}
+                selectedPapers={selectedPapers}
+                setSelectedPapers={setSelectedPapers}
+              />
               {/* <divv */}
             </div>
             {/* Divider */}
@@ -336,8 +478,36 @@ const ResizablePanels = () => {
               className="bg-chatbg h-full overflow-auto"
               style={{ width: leftWidth }}
             >
-              <div className="bg-gray-100"></div>
-              <LiveDemoEditor markdown={docData || "Write something..."} />
+              <div className="bg-gray-100 py-2 px-6 flex flex-row gap-4 w-full items-center">
+                <div>
+                  <Button
+                    className="bg-white text-black border-gray-300 border w-fit"
+                    onClick={() => saveDocument(chatbotId)}
+                  >
+                    {isSaving ? (
+                      <Loader className="animate-spin" size={16} />
+                    ) : (
+                      <Save size={16} />
+                    )}
+                    Save Documents
+                  </Button>
+                </div>
+                <div className=" text-black flex flex-row gap-2 items-center">
+                  {isSaved && (
+                    <>
+                      <CircleCheck className="text-green-500" />
+                      Saved
+                    </>
+                  )}
+                </div>
+              </div>
+              <LiveDemoEditor
+                markdown={docData || "Write something..."}
+                diffMarkdown={oldDocData}
+                setDocData={setDocData}
+                modeState={viewMode}
+                ref={childRef}
+              />
               {/* <divv */}
             </div>
             {/* Divider */}
@@ -350,7 +520,9 @@ const ResizablePanels = () => {
 
         {/* first Panel */}
         <div
-          className="flex-1 h-full overflow-auto"
+          className={`flex-1 h-full overflow-auto`}
+          style={{ width: rightWidth }}
+
           // style={{ width: paperData || docData ? leftWidth : "100%" }}
         >
           <div
@@ -375,7 +547,7 @@ const ResizablePanels = () => {
               {(!messages || messages.length <= 0) && (
                 <div className="flex flex-row justify-center items-center ">
                   <h1 className="text-2xl font-semibold text-primary">
-                    How can I help you? {user ? user.email : 'wawa'}
+                    How can I help you?
                   </h1>
                 </div>
               )}
@@ -386,6 +558,27 @@ const ResizablePanels = () => {
                     {messages?.map((message) => (
                       <ChatMessage key={message.id} message={message} />
                     ))}
+
+                    {oldDocData && (
+                      <div className="mx-15 flex flex-row gap-2 -mt-6">
+                        <Button
+                          className="bg-red-500 hover:bg-red-500/90 text-white"
+                          onClick={() => {
+                            rejectChanges();
+                          }}
+                        >
+                          Reject
+                        </Button>
+                        <Button
+                          className="bg-primarylight hover:bg-primarylight/90 text-white"
+                          onClick={() => {
+                            acceptChanges();
+                          }}
+                        >
+                          Accept
+                        </Button>
+                      </div>
+                    )}
 
                     {isLoading && (
                       <div className="flex justify-start">
