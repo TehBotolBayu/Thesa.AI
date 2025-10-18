@@ -74,7 +74,7 @@ export async function getAIPaperResponse(
   let messages = [...memory];
   // Step A: Send user query to Mistral with tools
   let response = await mistralClient.chat.complete({
-    model: "mistral-large-latest",
+    model: "mistral-medium-latest",
     messages,
     tools,
     toolChoice: "auto",
@@ -111,19 +111,25 @@ export async function getAIPaperResponse(
   //   });
   // }
 
+  const toolResult = JSON.parse(functionResult);
+  const toolResultSimplified = toolResult.map((paper, index) => ({
+    title: paper.title,
+    abstract: paper.abstract,
+  }));
+  console.log('toolResultSimplified: ', JSON.stringify(toolResultSimplified));
+  
+
   messages.push({
     role: "tool",
     name: functionName,
-    content: functionResult,
+    content: JSON.stringify(toolResultSimplified),
     tool_call_id: toolCall.id,
     toolCallId: toolCall.id,
   });
 
-  
-
   // Step E: Get final AI answer
   response = await mistralClient.chat.complete({
-    model: "mistral-large-latest",
+    model: "mistral-medium-latest",
     messages,
   });
 
@@ -157,8 +163,6 @@ Task: ${userPrompt}
 }
 `;
 
-  
-
   const memory = chatHistory.map((msg) => {
     switch (msg.type) {
       case "user":
@@ -182,8 +186,6 @@ Task: ${userPrompt}
     ...memory,
     new HumanMessage(prompt),
   ]);
-
-  
 
   return response;
 }

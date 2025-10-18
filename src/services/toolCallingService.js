@@ -32,7 +32,6 @@ export const namesToFunctions = {
 
       const res = await fetch(urlfetch);
       const data = await res.json();
-      // 
 
       const arxivData = await searchArxiv(query);
 
@@ -44,17 +43,27 @@ export const namesToFunctions = {
         authors: paper.authors?.map((a) => a.name),
       }));
 
-      
-
       resultData = [ ...resultData, ...arxivData ];
+
+      console.log('resultData: ', JSON.stringify(resultData));
+
+      resultData = resultData.map((paper, index) => ({
+        ...paper,
+        score: index + 1,
+      }));
       // 
       return JSON.stringify(resultData);
     } catch (err) {
-      const arxivData = await searchArxiv(query);
-      
+      let arxivData = await searchArxiv(query);
       if (arxivData?.length > 0) {
+        arxivData = arxivData.map((paper, index) => ({
+          ...paper,
+          score: index + 1,
+        }));
+        console.log('arxivData: ', JSON.stringify(arxivData));
         return JSON.stringify(arxivData);
       }
+      console.log('arxivData: ', JSON.stringify(arxivData));
       return JSON.stringify([{
         error: err.message,
         title: "",

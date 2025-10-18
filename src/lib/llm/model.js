@@ -2,8 +2,8 @@ import { ChatMistralAI, MistralAIEmbeddings } from "@langchain/mistralai";
 import { Mistral } from "@mistralai/mistralai";
 
 export const llm = new ChatMistralAI({
-  // model: "mistral-large-latest",
-  model: "mistral-large-latest",
+  // model: "mistral-medium-latest",
+  model: "mistral-medium-latest",
   temperature: 0,
 });
 

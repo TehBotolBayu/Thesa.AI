@@ -2,7 +2,7 @@ import { XMLParser } from 'fast-xml-parser';
 
 export async function searchArxiv(query, start = 0, maxResults = 10) {
   const baseUrl = 'https://export.arxiv.org/api/query';
-  const url = `${baseUrl}?search_query=all:${encodeURIComponent(query)}&start=${start}&max_results=${maxResults}`;
+  const url = `${baseUrl}?search_query=all:${encodeURIComponent(query)}&start=${start}&max_results=${maxResults}&sortOrder=descending&sortBy=relevance`;
 
   try {
     const response = await fetch(url);

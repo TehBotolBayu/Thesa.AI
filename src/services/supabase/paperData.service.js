@@ -74,7 +74,10 @@ export async function bulkCreatePapers(papers) {
     pdfUrl: paper.pdfUrl || null,
     authors: paper.authors || null,
     chatbotId: paper.chatbotId || null,
+    score: paper.score || null,
   }));
+
+  console.log('formatted: ', JSON.stringify(formatted));
 
   const { data, error } = await supabase.from("paper_data").insert(formatted).select();
   if (error) throw new Error(error.message);

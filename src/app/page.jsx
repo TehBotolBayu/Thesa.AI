@@ -242,6 +242,7 @@ const ResizablePanels = () => {
         const data = await response.json();
         // bug ai not answering after user send message
         newChatBotId.current = data.id;
+        setChatbotId(data.id);
         window.history.pushState(undefined, "Title", `/c/${data.id}`);
       } catch (err) {
         console.error("Error posting message:", err.message);
@@ -274,6 +275,7 @@ const ResizablePanels = () => {
       const body = {
         serialized: [{ type: "system", content: systemPrompt }, ...serialized],
         message: userMessage.message,
+        chatbotId: chatbotId || newChatBotId.current,
       };
 
       let aiResponseRes = null;
