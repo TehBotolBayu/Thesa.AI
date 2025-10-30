@@ -30,10 +30,17 @@ export const namesToFunctions = {
       let urlfetch = process.env.SEMANTIC_SCHOLAR_API_URL + SEARCH_URL(query);
       urlfetch = urlfetch.replace(/ /g, "%20");
 
-      const res = await fetch(urlfetch);
+      const res = await fetch(urlfetch, {
+        method: "GET",
+        headers: {
+          "x-api-key": "qYN0UCM19Y53e0D87fopI3ae1bGrt0yc1BsYOX02",
+        },
+      });
       const data = await res.json();
+      if(data)
+        console.log('get semantic scholar data: urlfetch', urlfetch, data?.data?.length);
 
-      const arxivData = await searchArxiv(query);
+      // const arxivData = await searchArxiv(query);
 
       let resultData = data.data.map((paper) => ({
         title: paper.title,
@@ -43,9 +50,9 @@ export const namesToFunctions = {
         authors: paper.authors?.map((a) => a.name),
       }));
 
-      resultData = [ ...resultData, ...arxivData ];
+      // resultData = [ ...resultData, ...arxivData ];
 
-      console.log('resultData: ', JSON.stringify(resultData));
+      // console.log('resultData: ', JSON.stringify(resultData));
 
       resultData = resultData.map((paper, index) => ({
         ...paper,
@@ -54,16 +61,17 @@ export const namesToFunctions = {
       // 
       return JSON.stringify(resultData);
     } catch (err) {
-      let arxivData = await searchArxiv(query);
-      if (arxivData?.length > 0) {
-        arxivData = arxivData.map((paper, index) => ({
-          ...paper,
-          score: index + 1,
-        }));
-        console.log('arxivData: ', JSON.stringify(arxivData));
-        return JSON.stringify(arxivData);
-      }
-      console.log('arxivData: ', JSON.stringify(arxivData));
+      // let arxivData = await searchArxiv(query);
+      // if (arxivData?.length > 0) {
+      //   arxivData = arxivData.map((paper, index) => ({
+      //     ...paper,
+      //     score: index + 1,
+      //   }));
+      //   console.log('arxivData: ', JSON.stringify(arxivData));
+      //   return JSON.stringify(arxivData);
+      // }
+      // console.log('arxivData: ', JSON.stringify(arxivData));
+      console.log('error: ', err.message);
       return JSON.stringify([{
         error: err.message,
         title: "",

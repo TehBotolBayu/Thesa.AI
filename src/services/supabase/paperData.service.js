@@ -1,9 +1,6 @@
 import { supabase } from "@/config/supabase";
 
-export async function createPaper(paper) {
-
-  
-    
+export async function createPaper(paper) {    
   const { data, error } = await supabase
     .from("paper_data")
     .insert([

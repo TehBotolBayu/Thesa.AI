@@ -32,6 +32,16 @@ export function useDocData() {
     return true;
   };
 
+  const fetchDocData = async (chatbotid, user) => {
+    const response = await fetch("/api/chatbot/" + chatbotid);
+    const data = await response.json();
+    if (data.created_by !== user.id) {
+      redirect("/");
+    }
+    setDocData(data.document);
+    return true;
+  };
+
   return {
     saveDocument,
     docData,
@@ -39,6 +49,7 @@ export function useDocData() {
     isSaving,
     isSaved,
     setIsSaved,
-    oldDocData, setOldDocData
+    oldDocData, setOldDocData,
+    fetchDocData,
   };
 }

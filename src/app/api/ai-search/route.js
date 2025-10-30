@@ -13,7 +13,6 @@ export async function POST(req) {
     }
 
     const prompt = `${message}`;
-
     const response = await getAIPaperResponse(prompt, serialized);
 
     const paperData = await response?.toolResult;

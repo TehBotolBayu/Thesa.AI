@@ -1,51 +1,74 @@
+import { systemPrompt } from "@/const/ai";
 import { llm, mistralClient } from "@/lib/llm/model";
+import {
+  aiResponseSchema,
+  ColumnValueArraySchema,
+  ColumnValueSchema,
+} from "@/schema/writerSchema";
 import {
   AIMessage,
   HumanMessage,
   SystemMessage,
 } from "@langchain/core/messages";
-import {
-  ChatPromptTemplate,
-  MessagesPlaceholder,
-} from "@langchain/core/prompts";
-import { AgentExecutor, createOpenAIFunctionsAgent } from "langchain/agents";
-import {
-  namesToFunctions,
-  searchSemanticScholar,
-  tools,
-} from "./toolCallingService";
-import { systemPrompt } from "@/const/ai";
-import { aiResponseSchema } from "@/schema/writerSchema";
+import { namesToFunctions, tools } from "./toolCallingService";
 
-export async function getAIResponse(serialized, prompt) {
-  const memory = serialized.map((msg) => {
-    switch (msg.type) {
-      case "user":
-        return new HumanMessage({ content: msg.content });
-      case "assistant":
-        return new AIMessage({ content: msg.content });
-      case "system":
-        return new SystemMessage({ content: msg.content });
-      default:
-        throw new Error("Unknown message type");
+export function testFuncton() {
+  return "asdkjfb";
+}
+
+export async function getAIResponse(
+  serialized,
+  prompt,
+  defaultSystemPrompt = `You are AI Agent that will help user`,
+  schema = null
+) {
+  // console.log("getAIResponse is starting");
+  // console.log("serialized: ", serialized);
+  // console.log("prompt: ", prompt);
+  // console.log("defaultSystemPrompt: ", defaultSystemPrompt);
+
+  try {
+    let memory = [];
+    if (serialized) {
+      memory = serialized.map((msg) => {
+        switch (msg.type) {
+          case "user":
+            return new HumanMessage({ content: msg.content });
+          case "assistant":
+            return new AIMessage({ content: msg.content });
+          default:
+            throw new Error("Unknown message type");
+        }
+      });
     }
-  });
 
-  // Create a structured LLM with the Zod schema
-  // const structuredLLM = llm.withStructuredOutput(chatSchema);
+    const systemPrompt = new SystemMessage({ content: defaultSystemPrompt });
+    memory = memory.length > 0 ? [systemPrompt, ...memory] : [systemPrompt];
 
-  // Add a system message to guide the LLM on the expected output format
-  const systemPrompt = new SystemMessage({
-    content: `You are AI Agent that will help user`,
-  });
+    console.log("adding structured output");
 
-  const response = await llm.invoke([
-    systemPrompt,
-    ...memory,
-    new HumanMessage(prompt),
-  ]);
+    let response = "";
 
-  return response;
+    if (schema) {
+      const structuredLLM = llm.withStructuredOutput(ColumnValueSchema);
+
+      response = await structuredLLM.invoke([
+        ...memory,
+        new HumanMessage(prompt),
+      ]);
+    } else {
+      response = await llm.invoke([
+        ...memory,
+        new HumanMessage(prompt),
+      ]);
+    }
+
+    // console.log("Response received:", response);
+    return response;
+  } catch (err) {
+    console.error("❌ Error in getAIResponse:", err);
+    throw err;
+  }
 }
 
 // 3. Main wrapper function
@@ -116,8 +139,7 @@ export async function getAIPaperResponse(
     title: paper.title,
     abstract: paper.abstract,
   }));
-  console.log('toolResultSimplified: ', JSON.stringify(toolResultSimplified));
-  
+  console.log("toolResultSimplified: ", JSON.stringify(toolResultSimplified));
 
   messages.push({
     role: "tool",

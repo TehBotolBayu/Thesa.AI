@@ -2,11 +2,12 @@ import React from 'react';
 import * as Select from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
-export default function StyledSelect({setSelectedValue}) {
+export default function StyledSelect({placeholder, setSelectedValue, selectionList}) {
+
   return (
-        <Select.Root onValueChange={setSelectedValue} defaultValue="literature">
-          <Select.Trigger className="inline-flex items-center justify-between w-full px-4 py-2.5 bg-chatbg border border-gray-300 rounded-full text-sm text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            <Select.Value placeholder="Select a fruit..." />
+        <Select.Root onValueChange={setSelectedValue} defaultValue={selectionList[0].value}>
+          <Select.Trigger className="inline-flex items-center justify-between w-full px-4 py-2.5 bg-chatbg border border-gray-300 rounded-lg text-sm text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <Select.Value placeholder={placeholder} />
             <Select.Icon className="ml-2">
               <ChevronDown size={16} className="text-gray-500" />
             </Select.Icon>
@@ -20,12 +21,12 @@ export default function StyledSelect({setSelectedValue}) {
               
               <Select.Viewport className="p-1">
                 <Select.Group>
-                  <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">
-                    Select a Mode
+                  <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase ">
+                    {placeholder}
                   </Select.Label>
-                  
-                  <SelectItem value="literature">Literature Review Mode</SelectItem>
-                  <SelectItem value="writer">Writer Mode</SelectItem>
+                  {selectionList.map((item) => (
+                    <SelectItem key={item.value} value={item.value} >{item.label}</SelectItem>
+                  ))}
                 </Select.Group>
               </Select.Viewport>
 

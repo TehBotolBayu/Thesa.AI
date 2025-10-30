@@ -11,8 +11,7 @@ export function usePaperData() {
   const [paperData, setPaperData] = useState();
 
   const deletePapers = async () => {
-    
-    
+    if(!selectedPapers.length) return;
     const body = {
       ids: selectedPapers,
     };
