@@ -125,10 +125,17 @@ export class PaperColumnValueService {
       throw new Error("bulkInsertPaperColumnValues requires a non-empty array");
     }
 
+    const filteredRecord = records.map(record => ({
+      paper_id: record.paper_id,
+      column_id: record.column_id,
+      chatbot_id: record.chatbot_id,
+      value: record.value
+    }));
+
     // Each record should include: paper_id, column_id, chatbot_id, value
     const { data, error } = await supabase
       .from("paper_column_value")
-      .insert(records)
+      .insert(filteredRecord)
       .select();
 
     if (error) {

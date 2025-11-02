@@ -2,6 +2,14 @@ import React, { useEffect, useState, useMemo, use } from "react";
 import "./styles.css";
 import { usePaperData } from "@/hooks/usePaperData";
 
+const notShowColumn = [
+  "extract_data",
+  "evaluation",
+  "synthesize",
+  "inclusion",
+  "exclusion",
+];
+
 const AcademicPaperTable = ({
   tableData,
   selectedPapers,
@@ -10,27 +18,8 @@ const AcademicPaperTable = ({
   additionalColumn,
   triggerFetching,
   addPaperColumnValues,
-  isReview = false
 }) => {
   const defaultColumn = [
-    {
-      header: " ",
-      key: "id",
-      className: "w-1/4",
-      render: (value, paperId) => (
-        <>
-          {selectedPapers && (
-            <input
-              className="cursor-pointer"
-              type="checkbox"
-              name="tomato"
-              checked={selectedPapers.includes(value)}
-              onChange={() => setSelectedPapers([...selectedPapers, value])}
-            />
-          )}
-        </>
-      ),
-    },
     {
       header: "Title",
       key: "title",
@@ -132,7 +121,8 @@ const AcademicPaperTable = ({
       ),
     },
   ];
-  const [originalColumns, setOriginalColumns] = useState( isReview ? [] : defaultColumn);
+
+  const [originalColumns, setOriginalColumns] = useState(defaultColumn);
 
   useEffect(() => {
     (() => {
@@ -142,7 +132,11 @@ const AcademicPaperTable = ({
       );
 
       if (!additionalColumn || additionalColumn.length === 0) return;
-      const processedAdditionalColumn = additionalColumn.map((column) => {
+      let processedAdditionalColumn = additionalColumn.map((column) => {
+        if (notShowColumn.includes(column?.step)) {
+          return null;
+        }
+
         return {
           header: column.label,
           key: column.id,
@@ -158,15 +152,16 @@ const AcademicPaperTable = ({
         };
       });
 
-      if (isReview) {
-        setOriginalColumns(processedAdditionalColumn);
-        return;
-      }
+      processedAdditionalColumn = processedAdditionalColumn.filter(
+        (column) => column !== null
+      );
+
       const newColumns = [...defaultColumn, ...processedAdditionalColumn];
       setOriginalColumns(newColumns);
     })();
   }, [additionalColumn, paperColumnValuesMap]);
 
+  // generate ai insgith after added new column to db and table_data where isFetching is true
   useEffect(() => {
     (async () => {
       const fetchedColumns = additionalColumn.find(
@@ -206,6 +201,8 @@ const AcademicPaperTable = ({
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-100">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    </th>
                     {originalColumns.map((column) => (
                       <th
                         key={column.key}
@@ -222,15 +219,28 @@ const AcademicPaperTable = ({
                       key={data?.paperId || data.title}
                       className="hover:bg-gray-50 transition-colors duration-150"
                     >
+                      <td
+                        className={`px-4 py-6 text-sm text-gray-900 align-top `}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedPapers.includes(data.id)}
+                          onChange={() =>
+                            setSelectedPapers(
+                              (prevSelected) =>
+                                prevSelected.includes(data.id)
+                                  ? prevSelected.filter((v) => v !== data.id) // uncheck → remove
+                                  : [...prevSelected, data.id] // check → add
+                            )
+                          }
+                        />
+                      </td>
                       {originalColumns.map((column) => (
                         <td
                           key={column.key + data.id}
                           className={`px-4 py-6 text-sm text-gray-900 align-top ${column.className}`}
                         >
-                          {column.render(
-                            data[column.key],
-                            JSON.stringify(data.id)
-                          )}
+                          {column.render(data[column.key], data.id)}
                         </td>
                       ))}
                     </tr>

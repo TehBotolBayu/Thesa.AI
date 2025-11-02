@@ -14,7 +14,7 @@ export async function POST(req) {
       );
     }
 
-    const data = await PaperColumnService.createPaperColumn({
+    const data = await PaperColumnService.createColumn({
       chatbot_id,
       label,
       instruction,

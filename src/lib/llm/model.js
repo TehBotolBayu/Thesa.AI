@@ -4,7 +4,7 @@ import { Mistral } from "@mistralai/mistralai";
 
 export const llm = new ChatMistralAI({
   // model: "mistral-medium-latest",
-  model: "mistral-medium-latest",
+  model: "mistral-large-latest",
   temperature: 0,
 });
 

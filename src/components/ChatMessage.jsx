@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import ChatbotEmailForm from "./form/chatbotEmailForm";
+import { LinkRenderer } from "@/lib/general/parser";
 
 // URL Detection utility
 class URLDetector {
@@ -86,22 +87,7 @@ function normalizeMath(content) {
     .replace(/\\\((.*?)\\\)/gs, (_, expr) => `$${expr}$`);
 }
 
-// Custom link renderer for ReactMarkdown
-const LinkRenderer = ({ href, children, ...props }) => {
-  const isExternal = href?.startsWith("http") || href?.startsWith("https");
 
-  return (
-    <a
-      href={href}
-      target={isExternal ? "_blank" : "_self"}
-      rel={isExternal ? "noopener noreferrer" : undefined}
-      className="text-blue-400 hover:text-blue-300 underline transition-colors duration-200"
-      {...props}
-    >
-      {children}
-    </a>
-  );
-};
 
 export const ChatMessage = ({ message, ...props }) => {
   const isUser = message.sender === "user";

@@ -1,7 +1,15 @@
 import { useState } from "react";
 
-export default function StepProgressBar({ status = "inprogress" }) {
-  const [currentStep, setCurrentStep] = useState(1);
+export default function StepProgressBar({ 
+  currentStep: propsCurrentStep, 
+  setCurrentStep: propsSetCurrentStep,
+  reviewStatus = "not_started" 
+}) {
+  const [localCurrentStep, setLocalCurrentStep] = useState(1);
+  
+  // Use props if provided, otherwise use local state
+  const currentStep = propsCurrentStep !== undefined ? propsCurrentStep : localCurrentStep;
+  const setCurrentStep = propsSetCurrentStep || setLocalCurrentStep;
 
   const steps = [
     { id: 1, label: "Defining Criteria" },
@@ -28,8 +36,8 @@ export default function StepProgressBar({ status = "inprogress" }) {
 
   return (
     <>
-      <h1 className="text-xl font-bold ">Academic Paper Information</h1>
-      {status === "inprogress" && (
+      <h1 className="text-xl font-bold ">Systematic Literature Review</h1>
+      {(reviewStatus === "in_progress" || reviewStatus === "not_started") && (
         <>
           <div className="relative my-4">
             {/* Background Line */}
@@ -112,17 +120,20 @@ export default function StepProgressBar({ status = "inprogress" }) {
               {currentStep === steps.length ? "Completed" : "Next"}
             </button>
           </div>
-          <p>In Progress</p>
+          {reviewStatus === "in_progress" && (
+            <p className="text-sm text-gray-600 mt-2">Review in progress...</p>
+          )}
+          {reviewStatus === "not_started" && (
+            <p className="text-sm text-gray-600 mt-2">Start by generating criteria in Step 1</p>
+          )}
         </>
       )}
-      {status === "completed" && (
-        <div>
-          <p>Completed</p>
-        </div>
-      )}
-      {status === "notstarted" && (
-        <div>
-          <p>Not Started</p>
+      {reviewStatus === "completed" && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 my-4">
+          <p className="text-green-800 font-semibold">✓ Review Completed</p>
+          <p className="text-sm text-green-700 mt-1">
+            All steps have been completed. You can view the synthesis report in Step 4.
+          </p>
         </div>
       )}
       {/* Progress Bar */}

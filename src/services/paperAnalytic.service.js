@@ -44,6 +44,8 @@ export async function sequentialPaperAnalyticService(papersData = [], column) {
         column_id: column.id,
         chatbot_id: paper.chatbotId,
         value: analysis,
+        label: column.label,
+        step: column.step || '',
       });
     } catch (error) {
       results.push({
@@ -51,6 +53,8 @@ export async function sequentialPaperAnalyticService(papersData = [], column) {
         column_id: column.id,
         chatbot_id: paper.chatbotId,
         value: null,
+        label: column.label,
+        step: column.step || '',
       });
     }
     console.log("processed paper: ", paper.id); 

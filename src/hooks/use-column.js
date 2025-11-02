@@ -17,7 +17,7 @@ export function useColumn() {
 
       console.log("columns response data", JSON.stringify(columns, null, 2));
       
-      setAdditionalColumn(columns);
+      setAdditionalColumn(columns? columns : []);
       const map = mapListPaperColumnValues(papers, columns, values);
       setPaperColumnValuesMap(map);
       setIsFetching(false);
@@ -66,10 +66,10 @@ export function useColumn() {
     for (const paper of papers) {
       map[paper.id] = {};
       for (const column of columns) {
-        map[paper.id][column.id] = values.find(
+        map[paper.id][column.id] = {...values.find(
           (value) =>
             value.paper_id === paper.id && value.column_id === column.id
-        );
+        ), label: column.label, step: column.step || ''};
       }
     }
     return map;
@@ -83,7 +83,7 @@ export function useColumn() {
       // Create a new object for the nested level to ensure React detects the change
       newMap[value.paper_id] = {
         ...newMap[value.paper_id],
-        [value.column_id]: value
+        [value.column_id]: {...value }
       };
     }
     setPaperColumnValuesMap(newMap);

@@ -8,12 +8,10 @@ import {
   BookOpen,
   CircleCheck,
   Columns4,
-  DownloadIcon,
+  FileTextIcon,
   GraduationCap,
   Loader,
-  Newspaper,
   NewspaperIcon,
-  Plus,
   Save,
   Send,
   Trash,
@@ -25,7 +23,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { usePaperData } from "@/hooks/usePaperData";
 import { FileText, Search } from "lucide-react";
 import dynamic from "next/dynamic";
-import { usePathname, useRouter, redirect } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/authProvider";
 import { useDocData } from "@/hooks/use-document";
 import { useChat } from "@/hooks/use-chat";
@@ -33,14 +31,18 @@ import ColumnManagemet from "./components/columnManagemet";
 import { useColumn } from "@/hooks/use-column";
 import StepProgressBar from "../progressBar";
 import { useReview } from "@/hooks/use-review";
+import Step1Criteria from "./components/systematicReviewSteps/Step1Criteria";
+import Step2Extraction from "./components/systematicReviewSteps/Step2Extraction";
+import Step3Evaluation from "./components/systematicReviewSteps/Step3Evaluation";
+import Step4Synthesis from "./components/systematicReviewSteps/Step4Synthesis";
 
 const LiveDemoEditor = dynamic(
   () => import("@/app/editor/components/DemoEditor"),
   { ssr: false }
 );
 
-const ChatInterface = ({}) => {
-  const { user, isLoading: authLoading, profile } = useAuth();
+const ChatInterface = () => {
+  const { user } = useAuth();
 
   const pathname = usePathname();
   const id = pathname.split("/").pop();
@@ -48,7 +50,6 @@ const ChatInterface = ({}) => {
   const {
     messages,
     setMessages,
-    fetchStatus,
     setFetchStatus,
     isLoading,
     setIsLoading,
@@ -61,7 +62,29 @@ const ChatInterface = ({}) => {
     sendMessage,
   } = useChat();
 
-  const { currentStep, setCurrentStep } = useReview();
+  const {
+    currentStep,
+    setCurrentStep,
+    reviewStatus,
+    setReviewStatus,
+    isProcessing: reviewProcessing,
+    setIsProcessing: setReviewProcessing,
+    criteria,
+    setCriteria,
+    extractionProgress,
+    setExtractionProgress,
+    extractionResults,
+    setExtractionResults,
+    evaluationProgress,
+    setEvaluationProgress,
+    evaluationResults,
+    setEvaluationResults,
+    synthesisReport,
+    setSynthesisReport,
+    synthesisLoading,
+    setSynthesisLoading,
+    resetReview,
+  } = useReview();
 
   const [inputMessage, setInputMessage] = useState("");
   const [isShowManageColumn, setIsShowManageColumn] = useState(false);
@@ -79,7 +102,8 @@ const ChatInterface = ({}) => {
     docData,
     setDocData,
     isSaving,
-    setIsSaving,
+    isExporting,
+    setIsExporting,
     isSaved,
     setIsSaved,
     oldDocData,
@@ -90,12 +114,8 @@ const ChatInterface = ({}) => {
   const {
     additionalColumn,
     paperColumnValuesMap,
-    fetchColumns,
-    fetchColumnValues,
-    mapListPaperColumnValues,
     addPaperColumnValues,
     initData: initColumnData,
-    isFetching,
     postNewColumn,
     triggerFetching,
   } = useColumn();
@@ -104,6 +124,110 @@ const ChatInterface = ({}) => {
     const id = pathname.split("/").pop();
     if (id) setChatbotId(id);
   }, [pathname]);
+
+  useEffect(() => {
+    let currStep = 1;
+    console.log(
+      "additionalColumn: ",
+      JSON.stringify(additionalColumn, null, 2)
+    );
+    if (
+      additionalColumn.find(
+        (column) =>
+          column.step === "extract_data" || column.step === "evaluation"
+      )
+    ) {
+      currStep = 2;
+      const extractDataColumn = additionalColumn.filter(
+        (column) => column.step === "extract_data"
+      );
+      // const extractDataColumnValues = paperColumnValuesMap.filter(column => column.step === "extract_data");
+
+      let extractionData = paperData.map((paper) => {
+        return {
+          paperId: paper.id,
+          success: true,
+          data: Object.values(paperColumnValuesMap[paper.id])
+            .map((item) => ({
+              label: item.label,
+              value: item.value,
+              step: item.step,
+            }))
+            .filter((item) => item.step === "extract_data"),
+        };
+      });
+
+      console.log("extractionData: ", JSON.stringify(extractionData, null, 2));
+
+      console.log(
+        "extractDataColumn: ",
+        JSON.stringify(extractDataColumn, null, 2)
+      );
+      setExtractionResults(extractionData);
+      setExtractionProgress({
+        total: extractDataColumn.length,
+        processed: extractDataColumn.length,
+        failed: 0,
+      });
+
+      if (additionalColumn.find((column) => column.step === "evaluation")) {
+        let evaluationData = paperData.map((paper) => {
+          return {
+            title: paper.title,
+            paperId: paper.id,
+            success: true,
+            // overallScore: '',
+            // keywordCount: '',
+            // inclusionScores: [],
+            // exclusionScores: [],
+            data: Object.values(paperColumnValuesMap[paper.id])
+              .map((item) => ({
+                label: item.label,
+                value: item.value,
+                step: item.step,
+              }))
+              .filter(
+                (item) =>
+                  item.step !== "extract_data" &&
+                  item.step !== null &&
+                  item.step !== ""
+              ),
+            // ...(Object.values(paperColumnValuesMap[paper.id]).map(item => ({
+            //   label: item.label,
+            //   value: item.value,
+            //   step: item.step
+            // }))).filter(item => item.step === "evaluation")
+          };
+        });
+
+        console.log(
+          "evaluationData: ",
+          JSON.stringify(evaluationData, null, 2)
+        );
+
+        setEvaluationResults(evaluationData);
+        setEvaluationProgress({
+          total: evaluationData.length,
+          processed: evaluationData.length,
+          failed: 0,
+        });
+
+        currStep = 3;
+      }
+    }
+    setCurrentStep(currStep);
+  }, [additionalColumn]);
+
+  useEffect(() => {
+    (async () => {
+    if (currentStep === 3) {
+      const response = await fetch("/api/document?chatbot_id=" + chatbotId);
+        const data = await response.json();
+        console.log('documentm data: ', JSON.stringify(data, null, 2));
+        setSynthesisReport(data[0].content);
+      } 
+    })();
+  }, [currentStep]);
 
   const {
     deletePapers,
@@ -129,6 +253,7 @@ const ChatInterface = ({}) => {
         setChatbotId(id);
         initChatData(id);
         fetchPaperData(id);
+        fetchReviewCriteria(id);
       }
     })();
   }, [id, user]);
@@ -299,7 +424,7 @@ const ChatInterface = ({}) => {
       return;
     }
 
-    const result = await sendMessage({
+    await sendMessage({
       chatbot_id: chatbotId || newChatBotId.current,
       message: inputMessage || message,
       sender: "user",
@@ -371,7 +496,7 @@ const ChatInterface = ({}) => {
           };
         }
 
-        const result = await sendMessage({
+        await sendMessage({
           chatbot_id: chatbotId || newChatBotId.current,
           message: aiMessage.message,
           sender: "assistant",
@@ -387,7 +512,7 @@ const ChatInterface = ({}) => {
         }
         setMessages((prev) => [...prev, aiMessage]);
       } else {
-        throw Error("No ai response");
+        throw new Error("No ai response");
       }
     } catch (error) {
       console.error("Error in chat flow:", error);
@@ -408,11 +533,204 @@ const ChatInterface = ({}) => {
 
   const handlePostNewColumn = async (columnName, columnInstruction) => {
     setIsShowManageColumn(false);
-    const column = await postNewColumn(
-      chatbotId,
-      columnName,
-      columnInstruction
+    await postNewColumn(chatbotId, columnName, columnInstruction);
+  };
+
+  // Systematic Review Handlers
+  const handleGenerateCriteria = async () => {
+    try {
+      setReviewProcessing(true);
+      setReviewStatus("in_progress");
+
+      const response = await fetch("/api/systematic-review/generate-criteria", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chatHistory: messages,
+          userQuery: null, // Can be used for additional context if needed
+          paperCount: paperData.length,
+          chatbot_id: chatbotId,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Failed to generate criteria");
+      }
+
+      const result = await response.json();
+      setCriteria(result?.data || {});
+    } catch (error) {
+      console.error("Error generating criteria:", error);
+      alert("Failed to generate criteria. Please try again.");
+    } finally {
+      setReviewProcessing(false);
+    }
+  };
+
+  const handleConfirmCriteria = () => {
+    setCurrentStep(2);
+  };
+
+  const handleExtractData = async () => {
+    try {
+      setReviewProcessing(true);
+      setExtractionProgress({
+        total: paperData.length,
+        processed: 0,
+        failed: 0,
+      });
+
+      const response = await fetch("/api/systematic-review/extract-data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          papers: paperData,
+          criteria,
+          chatbotId,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Failed to extract criteria");
+      }
+
+      const result = await response.json();
+      setExtractionResults(result.data);
+
+      const failedCount = result.data.filter((r) => !r.success).length;
+      setExtractionProgress({
+        total: paperData.length,
+        processed: paperData.length,
+        failed: failedCount,
+      });
+
+      // Refresh column data
+      await fetchPaperData(chatbotId);
+      setActiveTab("review");
+    } catch (error) {
+      console.error("Error extracting data:", error);
+      alert("Failed to extract data. Please try again.");
+    } finally {
+      setReviewProcessing(false);
+      setActiveTab("review");
+    }
+  };
+
+  const handleEvaluatePapers = async () => {
+    try {
+      setReviewProcessing(true);
+      setEvaluationProgress({
+        total: paperData.length,
+        processed: 0,
+        failed: 0,
+      });
+
+      const response = await fetch("/api/systematic-review/evaluate-papers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          papers: paperData,
+          extractions: extractionResults,
+          criteria,
+          chatbotId,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Failed to evaluate criteria");
+      }
+
+      const result = await response.json();
+
+      console.log("new generated evaluation results: ", JSON.stringify(result.dxata, null, 2));
+      setEvaluationResults(result.data);
+
+      const failedCount = result.data.filter((r) => !r.success).length;
+      setEvaluationProgress({
+        total: paperData.length,
+        processed: paperData.length,
+        failed: failedCount,
+      });
+
+      // Refresh column data
+      await fetchPaperData(chatbotId);
+
+      setActiveTab("review");
+    } catch (error) {
+      console.error("Error evaluating papers:", error);
+      alert("Failed to evaluate papers. Please try again.");
+    } finally {
+      setReviewProcessing(false);
+      setActiveTab("review");
+    }
+  };
+
+  const handleSynthesize = async () => {
+    try {
+      setSynthesisLoading(true);
+
+      const response = await fetch("/api/systematic-review/synthesize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          papers: paperData,
+          evaluations: evaluationResults,
+          extractions: extractionResults,
+          criteria,
+          chatbot_id: chatbotId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to synthesize results");
+      }
+
+      const result = await response.json();
+      setSynthesisReport(result.data.synthesis);
+      setReviewStatus("completed");
+      setActiveTab("review");
+    } catch (error) {
+      console.error("Error synthesizing results:", error);
+      alert("Failed to synthesize results. Please try again.");
+    } finally {
+      setSynthesisLoading(false);
+      setActiveTab("review");
+    }
+  };
+
+  const handleApplyToEditor = () => {
+    setDocData(synthesisReport);
+    setActiveTab("editor");
+  };
+
+  const fetchReviewCriteria = async (chatbotId) => {
+    const response = await fetch(
+      `/api/systematic-review/generate-criteria/${chatbotId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }
     );
+
+    if (!response.ok) {
+      setCriteria({});
+      return;
+    }
+
+    const result = await response.json();
+
+    console.log("Review criteria: ", JSON.stringify(result, null, 2));
+
+    setCriteria(result?.data || {});
+  };
+
+  const handleExportDoc = () => {
+    convertMarkdownToDocx(docData, "document.docx");
+    setIsExporting(true);
+    setTimeout(() => {
+      setIsExporting(false);
+    }, 1000);
+    return true;
   };
 
   return (
@@ -497,13 +815,6 @@ const ChatInterface = ({}) => {
                   </div>
                   <Button
                     className="bg-white text-black border-gray-300 border"
-                    onClick={() => {}}
-                  >
-                    <NewspaperIcon size={16} />
-                    Conduct Systematic Review
-                  </Button>
-                  <Button
-                    className="bg-white text-black border-gray-300 border"
                     onClick={() => setIsShowManageColumn(true)}
                   >
                     <Columns4 size={16} />
@@ -560,6 +871,19 @@ const ChatInterface = ({}) => {
                     Save Documents
                   </Button>
                 </div>
+                <div>
+                  <Button
+                    className="bg-white text-black border-gray-300 border w-fit"
+                    onClick={() => handleExportDoc()}
+                  >
+                    {isExporting ? (
+                      <Loader className="animate-spin" size={16} />
+                    ) : (
+                      <FileTextIcon size={16} />
+                    )}
+                    Export to doc
+                  </Button>
+                </div>
                 <div className=" text-black flex flex-row gap-2 items-center">
                   {isSaved && (
                     <>
@@ -598,28 +922,63 @@ const ChatInterface = ({}) => {
               style={{ width: leftWidth }}
             >
               <div className="bg-gray-100 px-6 py-4 ">
-                <StepProgressBar />
+                <StepProgressBar
+                  currentStep={currentStep}
+                  setCurrentStep={setCurrentStep}
+                  reviewStatus={reviewStatus}
+                />
               </div>
 
-              <div className="p-6">
-              {isShowManageColumn ? (
-                <ColumnManagemet
-                  setIsShowManageColumn={setIsShowManageColumn}
-                  columns={additionalColumn}
-                  handlePostNewColumn={handlePostNewColumn}
-                />
-              ) : (
-                <AcademicPaperTable
-                  tableData={paperData}
-                  selectedPapers={selectedPapers}
-                  setSelectedPapers={setSelectedPapers}
-                  paperColumnValuesMap={paperColumnValuesMap}
-                  additionalColumn={additionalColumn}
-                  triggerFetching={triggerFetching}
-                  addPaperColumnValues={addPaperColumnValues}
-                  isReview={true}
-                />
-              )}
+              <div>
+                {currentStep === 1 && (
+                  <Step1Criteria
+                    criteria={criteria}
+                    setCriteria={setCriteria}
+                    onGenerate={handleGenerateCriteria}
+                    onConfirm={handleConfirmCriteria}
+                    isProcessing={reviewProcessing}
+                    paperData={paperData}
+                  />
+                )}
+                {currentStep === 2 && (
+                  <Step2Extraction
+                    extractionProgress={extractionProgress}
+                    extractionResults={extractionResults}
+                    onExtract={handleExtractData}
+                    onContinue={() => setCurrentStep(3)}
+                    onBack={() => setCurrentStep(1)}
+                    isProcessing={reviewProcessing}
+                    paperData={paperData}
+                  />
+                )}
+                {currentStep === 3 && (
+                  <Step3Evaluation
+                    evaluationProgress={evaluationProgress}
+                    evaluationResults={evaluationResults}
+                    onEvaluate={handleEvaluatePapers}
+                    onContinue={() => setCurrentStep(4)}
+                    onBack={() => setCurrentStep(2)}
+                    isProcessing={reviewProcessing}
+                    paperData={paperData}
+                    criteria={criteria}
+                    columns={additionalColumn.filter(
+                      (column) =>
+                        column.step !== "extract_data" &&
+                        column.step !== "" &&
+                        column.step !== null
+                    )}
+                  />
+                )}
+                {currentStep === 4 && (
+                  <Step4Synthesis
+                    synthesisReport={synthesisReport}
+                    onSynthesize={handleSynthesize}
+                    onApplyToEditor={handleApplyToEditor}
+                    onBack={() => setCurrentStep(3)}
+                    isProcessing={reviewProcessing}
+                    synthesisLoading={synthesisLoading}
+                  />
+                )}
               </div>
               {/* <divv */}
             </div>
