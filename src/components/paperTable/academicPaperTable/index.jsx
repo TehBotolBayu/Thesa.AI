@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../styles.css";
 import PaperTable from "..";
+import MarkdownParser from "@/components/ui/markdownParser";
 
 const notShowColumn = [
   "extract_data",
@@ -139,9 +140,11 @@ const AcademicPaperTable = ({
           render: (value, paperId, map) => (
             <div className="w-[480px] max-h-48 overflow-y-auto ">
               {column?.isFetching ? "Fetching..." : ""}
-              {map[paperId][column.id]
-                ? map[paperId][column.id].value
-                : ""}
+              <MarkdownParser
+                content={
+                  map[paperId][column.id] ? map[paperId][column.id].value : ""
+                }
+              />
             </div>
           ),
         };
@@ -179,18 +182,20 @@ const AcademicPaperTable = ({
       }
       const data = await response.json();
 
-      
       const valuesData = data.data;
-      
+
       addPaperColumnValues(valuesData);
       triggerFetching(fetchedColumns.id, false);
     })();
   }, [tableData, additionalColumn]);
-  
+
   useEffect(() => {
-    console.log("paperColumnValuesMap data in academicpapertable: ", paperColumnValuesMap);
+    console.log(
+      "paperColumnValuesMap data in academicpapertable: ",
+      paperColumnValuesMap
+    );
   }, [paperColumnValuesMap]);
-  
+
   return (
     <PaperTable
       tableRowData={tableData}
@@ -202,4 +207,4 @@ const AcademicPaperTable = ({
   );
 };
 
-export default AcademicPaperTable; 
+export default AcademicPaperTable;

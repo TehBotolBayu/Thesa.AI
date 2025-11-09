@@ -133,7 +133,7 @@ const ColumnManagement = ({
           <CardContent>
             {columns && columns.length > 0 ? (
               <div className="space-y-3">
-                {columns.map((column) => (
+                {columns.filter((column) => column.step === null || column.step.trim() === "").map((column) => (
                   <div
                     key={column.id}
                     className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"

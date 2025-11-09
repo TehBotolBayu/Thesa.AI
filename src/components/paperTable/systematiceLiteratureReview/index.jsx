@@ -2,6 +2,7 @@ import { flattenExtractedData } from "@/lib/dataUtil/systematicReviewExtraction"
 import { useMemo, useState } from "react";
 import "../styles.css";
 import PaperTable from "..";
+import MarkdownParser from "@/components/ui/markdownParser";
 
 const SystematicLiteratureReviewPaperTable = ({
   tableRowData = [],
@@ -26,7 +27,9 @@ const SystematicLiteratureReviewPaperTable = ({
       key: item.label.toLowerCase(),
       className: "w-1/6",
       render: (value, paperId) => (
-        <div className="w-[480px] max-h-48 overflow-y-auto ">{value}</div>
+        <div className="w-[480px] max-h-48 overflow-y-auto ">
+          <MarkdownParser content={value} />
+        </div>
       ),
     }));
     if(paperData.length > 0) {

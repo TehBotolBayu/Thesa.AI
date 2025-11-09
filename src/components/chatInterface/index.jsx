@@ -793,7 +793,7 @@ const ChatInterface = () => {
         {activeTab === "research" && (
           <>
             <div
-              className="bg-chatbg overflow-auto"
+              className="bg-chatbg overflow-auto hide-scrollbar "
               style={{ width: leftWidth }}
             >
               <div className="bg-gradient-to-r from-blue-50 to-blue-50 px-6 py-5 border-b border-gray-200">
@@ -805,7 +805,7 @@ const ChatInterface = () => {
                     variant="outline"
                     className="bg-white"
                     onClick={deletePapers}
-                  > 
+                  >
                     <Trash size={16} />
                     Delete Papers
                   </Button>
