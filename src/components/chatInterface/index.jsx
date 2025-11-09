@@ -87,7 +87,8 @@ const ChatInterface = () => {
     resetReview,
   } = useReview();
 
-  const [inputMessage, setInputMessage] = useState("");
+  const inputRef = useRef("");
+  const inputElementRef = useRef(null);
   const [isShowManageColumn, setIsShowManageColumn] = useState(false);
   const [viewMode, setViewMode] = useState("rich-text");
   const [leftWidth, setLeftWidth] = useState(300); // starting width
@@ -363,11 +364,12 @@ const ChatInterface = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+    if (!inputRef.current.trim()) return;
+    inputElementRef.current.value = "";
 
     const userMessage = {
       id: Date.now().toString(),
-      message: inputMessage,
+      message: inputRef.current,
       sender: "user",
       created_at: new Date(),
     };
@@ -377,7 +379,6 @@ const ChatInterface = () => {
     } else {
       setMessages([userMessage]);
     }
-    setInputMessage("");
     setIsLoading(true);
 
     if (user && (!chatbotId || (!newChatBotId.current && !id))) {
@@ -388,7 +389,7 @@ const ChatInterface = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            name: inputMessage,
+            name: inputRef.current,
             description: "",
             system_prompt: "",
           }),
@@ -397,6 +398,9 @@ const ChatInterface = () => {
         if (!response.ok) {
           const errorData = await response.json();
           console.error("API error:", errorData.error || "Unknown error");
+          inputRef.current = "";
+          inputElementRef.current.value = "";
+          setIsLoading(false);
           return;
         }
 
@@ -407,6 +411,9 @@ const ChatInterface = () => {
         window.history.pushState(undefined, "Title", `/c/${data.id}`);
       } catch (err) {
         console.error("Error posting message:", err.message);
+        inputRef.current = "";
+        inputElementRef.current.value = "";
+        setIsLoading(false);
         return null;
       }
     } else if (!user) {
@@ -416,7 +423,7 @@ const ChatInterface = () => {
 
     await sendMessage({
       chatbot_id: chatbotId || newChatBotId.current,
-      message: inputMessage || message,
+      message: inputRef.current,
       sender: "user",
       session_id: Date.now().toString(),
     });
@@ -495,12 +502,6 @@ const ChatInterface = () => {
 
         if (aiData?.data?.toolResult) {
           fetchPaperData(chatbotId || newChatBotId.current);
-          // if (paperData && paperData.length > 0) {
-          //   setPaperData((prev) => [...prev, ...aiData.data.toolResult]);
-          // } else {
-          //   fetchPaperData()
-          //   setPaperData(aiData.data.toolResult);
-          // }
         }
         setMessages((prev) => [...prev, aiMessage]);
       } else {
@@ -509,6 +510,8 @@ const ChatInterface = () => {
     } catch (error) {
       console.error("Error in chat flow:", error);
     }
+    inputRef.current = "";
+    inputElementRef.current.value = "";
     setIsLoading(false);
   };
 
@@ -871,7 +874,7 @@ const ChatInterface = () => {
         {activeTab === "editor" && (
           <>
             <div
-              className="bg-chatbg h-full overflow-auto overflow-x-auto"
+              className="bg-white h-full overflow-auto overflow-x-auto"
               style={{ width: leftWidth, whiteSpace: "nowrap" }}
             >
               <div className="bg-gradient-to-r from-blue-50 to-blue-50 py-4 px-6 flex flex-row gap-3 w-full items-center border-b border-gray-200">
@@ -1118,15 +1121,18 @@ const ChatInterface = () => {
               <div className="border-t  rounded-xl bg-white backdrop-blur-sm container mx-auto p-4 shadow-lg">
                 <div className="flex gap-3">
                   <Input
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
+                    ref={inputElementRef}
+                    defaultValue=""
+                    onChange={(e) => {
+                      inputRef.current = e.target.value;
+                    }}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask anything..."
                     className="flex-1"
                   />
                   <Button
                     onClick={handleSendMessage}
-                    disabled={!inputMessage.trim() || isLoading}
+                    disabled={isLoading}
                     className="gap-2 bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white cursor-pointer"
                   >
                     <Send className="h-5 w-5" />

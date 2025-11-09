@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../styles.css";
 import PaperTable from "..";
 import MarkdownParser from "@/components/ui/markdownParser";
+import { ColumnSkeleton } from "@/components/ui/skeletons/columnSkeleton";
 
 const notShowColumn = [
   "extract_data",
@@ -138,13 +139,14 @@ const AcademicPaperTable = ({
           key: column.id,
           className: "",
           render: (value, paperId, map) => (
-            <div className="w-[480px] max-h-48 overflow-y-auto ">
-              {column?.isFetching ? "Fetching..." : ""}
-              <MarkdownParser
-                content={
-                  map[paperId][column.id] ? map[paperId][column.id].value : ""
-                }
-              />
+            <div className="w-[480px] max-h-48 overflow-y-auto">
+              {column?.isFetching ? (
+                <ColumnSkeleton />
+              ) : (
+                <MarkdownParser
+                  content={map[paperId][column.id]?.value ?? ""}
+                />
+              )}
             </div>
           ),
         };

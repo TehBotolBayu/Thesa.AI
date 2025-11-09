@@ -55,7 +55,7 @@ const reactSandpackConfig = {
 
 const allPlugins = (diffMarkdown, modeState) => [
   toolbarPlugin({
-    toolbarContents: () => <KitchenSinkToolbar />,
+    toolbarContents: () => <KitchenSinkToolbar/>,
   }),
   listsPlugin(),
   quotePlugin(),
@@ -101,7 +101,7 @@ export default function DemoEditor({
 
   return (
     <MDXEditor
-    key={modeState}
+      key={modeState}
       markdown={markdown}
       contentEditableClassName="prose max-w-full font-sans"
       plugins={allPlugins(diffMarkdown, modeState)}
