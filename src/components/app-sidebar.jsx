@@ -65,9 +65,9 @@ export function AppSidebar() {
             <SidebarGroup>
               <SidebarGroupLabel>
                 {/* <div className="flex"> */}
-                  <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 text-2xl font-extrabold my-6">
+                  <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-600 text-2xl font-extrabold my-6">
                     Thesa.AI
-                  <span className="text-purple-600 text-xs font-medium">
+                  <span className="text-blue-600 text-xs font-medium">
                     by Bayu & Zaid
                   </span>
                   </h1>

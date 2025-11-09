@@ -30,11 +30,11 @@ export default function Step4Synthesis({
 
   return (
     <div className="p-6 space-y-6">
-      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-        <h2 className="text-lg font-semibold text-purple-900 mb-2">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h2 className="text-lg font-semibold text-blue-900 mb-2">
           Step 4: Synthesize Results
         </h2>
-        <p className="text-sm text-purple-700">
+        <p className="text-sm text-blue-700">
           AI will analyze all papers, extractions, and evaluations to identify
           patterns, contradictions, relationships, and generate a comprehensive
           synthesis report.
@@ -50,7 +50,7 @@ export default function Step4Synthesis({
           <Button
             onClick={onSynthesize}
             disabled={isProcessing || synthesisLoading}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             {synthesisLoading ? (
               <>
@@ -105,7 +105,7 @@ export default function Step4Synthesis({
             <Button
               onClick={handleExport}
               disabled={isProcessing}
-              className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
             >
               <Download size={16} />
               Export Report To Docx

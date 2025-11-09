@@ -65,7 +65,7 @@ const ChatbotEmailForm = () => {
               id="email"
               type="email"
               placeholder="Enter your email"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 outline-none hover:border-gray-400"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none hover:border-gray-400"
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
@@ -83,7 +83,7 @@ const ChatbotEmailForm = () => {
               id="phone"
               type="text"
               placeholder="Enter your phone number"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 outline-none hover:border-gray-400"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none hover:border-gray-400"
               onChange={(e) => handlePhoneChange(e)}
             />
           </div>
@@ -145,7 +145,7 @@ const ChatbotEmailForm = () => {
           <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="cursor-pointer w-full bg-primary hover:bg-primary/70 disabled:bg-primary/40 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+            className="cursor-pointer w-full bg-primary hover:bg-primary/70 disabled:bg-primary/40 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
           >
             <Loader
               className={`animate-spin mr-2 h-5 w-5 ${

@@ -15,7 +15,7 @@ export const HeroTitle2 = ({ text, className = '' }) => {
   return (
     <h1
     className={`z-40 text-5xl font-bold 
-      bg-linear-to-tr from-light-purple to-dark-purple text-white 
+      bg-linear-to-tr from-light-blue to-dark-blue text-white 
       w-fit ${className}
       `}
     >{text}</h1>
@@ -26,7 +26,7 @@ export const HeroTitle3 = ({ text, className = '' }) => {
   return (
     <h1
     className={`md:text-3xl text-xl font-bold 
-      bg-linear-to-tr from-light-purple to-dark-purple text-white 
+      bg-linear-to-tr from-light-blue to-dark-blue text-white 
       w-fit ${className}
       `}
     >{text}</h1>

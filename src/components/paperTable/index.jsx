@@ -24,14 +24,14 @@ const PaperTable = ({
   }, [tableRowData]);
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 overflow-x-auto overflow-y-hidden">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 overflow-x-auto overflow-y-hidden ">
       {tableRowData && (
         <div className="mx-auto">
           <div className="bg-white rounded-xl shadow-lg overflow-x-auto overflow-y-hidden border border-gray-200">
-            <div className="">
+            <div className="h-[calc(100vh-212px)] overflow-y-scroll">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
+                  <tr className="bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-200">
                     {selectedData && (
                       <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                     )}
@@ -49,7 +49,7 @@ const PaperTable = ({
                   {tableRowData.map((data, index) => (
                     <tr
                       key={data?.paperId || data.title}
-                      className="hover:bg-gradient-to-r hover:from-indigo-50/30 hover:to-purple-50/30 transition-all duration-200"
+                      className="hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-blue-50/30 transition-all duration-200"
                     >
                       {selectedData && (
                         <td
@@ -66,7 +66,7 @@ const PaperTable = ({
                                     : [...prevSelected, data.id] // check → add
                               )
                             }
-                            className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
                           />
                         </td>
                       )}

@@ -45,7 +45,7 @@ export default function StepProgressBar({
 
             {/* Active Line with Gradient */}
             <div
-              className="absolute top-5 left-0 h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500 ease-in-out shadow-md"
+              className="absolute top-5 left-0 h-2 bg-gradient-to-r from-blue-500 via-blue-500 to-pink-500 rounded-full transition-all duration-500 ease-in-out shadow-md"
               style={{
                 width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`,
               }}
@@ -60,9 +60,9 @@ export default function StepProgressBar({
                     onClick={() => goToStep(step.id)}
                     className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${
                       currentStep >= step.id
-                        ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/50 scale-110 ring-4 ring-indigo-100"
-                        : "bg-white text-gray-400 border-2 border-gray-300 hover:border-indigo-300"
-                    } hover:scale-125 focus:outline-none focus:ring-4 focus:ring-indigo-200`}
+                        ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50 scale-110 ring-4 ring-blue-100"
+                        : "bg-white text-gray-400 border-2 border-gray-300 hover:border-blue-300"
+                    } hover:scale-125 focus:outline-none focus:ring-4 focus:ring-blue-200`}
                   >
                     {currentStep > step.id ? (
                       <svg
@@ -114,7 +114,7 @@ export default function StepProgressBar({
               className={`px-8 py-3.5 rounded-xl font-semibold transition-all duration-200 ${
                 currentStep === steps.length
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg shadow-md"
+                  : "bg-gradient-to-r from-blue-600 to-blue-600 text-white hover:from-blue-700 hover:to-blue-700 hover:shadow-lg shadow-md"
               }`}
             >
               {currentStep === steps.length ? "Completed" : "Next"}

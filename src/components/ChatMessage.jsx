@@ -125,17 +125,17 @@ export const ChatMessage = ({ message, ...props }) => {
         )}
       >
         {!isUser && (
-          <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
+          <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
             <GraduationCap size={20} className="text-white" />
           </div>
         )}
 
         <div
           className={cn(
-            "relative rounded-2xl px-5 py-3.5 word-break break-words shadow-md transition-all duration-200",
+            "relative rounded-2xl px-5 py-3.5 word-break break-words transition-all duration-200",
             isUser
-              ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-br-none md:max-w-[80%] hover:shadow-lg"
-              : "bg-white border border-gray-200 text-gray-800 rounded-tl-none w-full hover:shadow-lg"
+              ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md rounded-br-none md:max-w-[80%] hover:shadow-lg"
+              : "bg-whitetext-gray-800 w-full"
           )}
         >
           <div className="markdown">

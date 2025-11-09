@@ -745,15 +745,15 @@ const ChatInterface = () => {
   }, []);
 
   return (
-    <div className="h-[calc(100vh-46px)]">
+    <div className="h-[calc(100vh-47px)]">
       <nav className="bg-white border-b border-gray-200 px-6 shadow-sm">
         <div className="flex space-x-2">
           <button
             onClick={() => setActiveTab("research")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "research"
-                ? "border-indigo-500 text-indigo-600 bg-indigo-50"
-                : "border-transparent text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/50"
+                ? "border-blue-500 text-blue-600 bg-blue-50"
+                : "border-transparent text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
             }`}
           >
             <Search size={18} />
@@ -763,8 +763,8 @@ const ChatInterface = () => {
             onClick={() => setActiveTab("editor")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "editor"
-                ? "border-indigo-500 text-indigo-600 bg-indigo-50"
-                : "border-transparent text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/50"
+                ? "border-blue-500 text-blue-600 bg-blue-50"
+                : "border-transparent text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
             }`}
           >
             <FileText size={18} />
@@ -774,8 +774,8 @@ const ChatInterface = () => {
             onClick={() => setActiveTab("review")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "review"
-                ? "border-indigo-500 text-indigo-600 bg-indigo-50"
-                : "border-transparent text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/50"
+                ? "border-blue-500 text-blue-600 bg-blue-50"
+                : "border-transparent text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
             }`}
           >
             <BookOpen size={18} />
@@ -793,10 +793,10 @@ const ChatInterface = () => {
         {activeTab === "research" && (
           <>
             <div
-              className="bg-chatbg  h-full overflow-auto"
+              className="bg-chatbg overflow-auto"
               style={{ width: leftWidth }}
             >
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-5 border-b border-gray-200">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-50 px-6 py-5 border-b border-gray-200">
                 <h1 className="text-2xl font-bold text-gray-900 mb-3">
                   Academic Paper Information
                 </h1>
@@ -805,7 +805,7 @@ const ChatInterface = () => {
                     variant="outline"
                     className="bg-white"
                     onClick={deletePapers}
-                  >
+                  > 
                     <Trash size={16} />
                     Delete Papers
                   </Button>
@@ -844,7 +844,7 @@ const ChatInterface = () => {
                   setColumns={setAdditionalColumn}
                 />
               ) : (
-                <div className="max-w-6xl mx-auto p-4">
+                <div className="max-w-6xl mx-auto p-4 ">
                   <AcademicPaperTable
                     tableData={paperData}
                     selectedPapers={selectedPapers}
@@ -874,7 +874,7 @@ const ChatInterface = () => {
               className="bg-chatbg h-full overflow-auto overflow-x-auto"
               style={{ width: leftWidth, whiteSpace: "nowrap" }}
             >
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 py-4 px-6 flex flex-row gap-3 w-full items-center border-b border-gray-200">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-50 py-4 px-6 flex flex-row gap-3 w-full items-center border-b border-gray-200">
                 <div>
                   <Button
                     variant="outline"
@@ -943,7 +943,7 @@ const ChatInterface = () => {
               className="bg-chatbg h-full w-full overflow-auto overflow-x-auto"
               style={{ width: leftWidth }}
             >
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-5 border-b border-gray-200">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-50 px-6 py-5 border-b border-gray-200">
                 <StepProgressBar
                   currentStep={currentStep}
                   setCurrentStep={setCurrentStep}
@@ -1039,10 +1039,10 @@ const ChatInterface = () => {
             >
               {(!messages || messages.length <= 0) && (
                 <div className="flex flex-col justify-center items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
                     <GraduationCap size={32} className="text-white" />
                   </div>
-                  <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+                  <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-600">
                     How can I help you?
                   </h1>
                   <p className="text-gray-600 text-center max-w-md">
@@ -1082,22 +1082,22 @@ const ChatInterface = () => {
 
                     {isLoading && (
                       <div className="flex justify-start gap-4">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
                           <GraduationCap size={20} className="text-white" />
                         </div>
                         <div className="px-5 py-3.5 rounded-2xl rounded-tl-none bg-white border border-gray-200 shadow-md">
                           <div className="flex items-center gap-2">
                             <div className="flex gap-1">
                               <span
-                                className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"
+                                className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
                                 style={{ animationDelay: "0s" }}
                               ></span>
                               <span
-                                className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"
+                                className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
                                 style={{ animationDelay: "0.2s" }}
                               ></span>
                               <span
-                                className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"
+                                className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
                                 style={{ animationDelay: "0.4s" }}
                               ></span>
                             </div>
@@ -1127,7 +1127,7 @@ const ChatInterface = () => {
                   <Button
                     onClick={handleSendMessage}
                     disabled={!inputMessage.trim() || isLoading}
-                    className="gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white cursor-pointer"
+                    className="gap-2 bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white cursor-pointer"
                   >
                     <Send className="h-5 w-5" />
                     <span className="hidden sm:block"> Send </span>
