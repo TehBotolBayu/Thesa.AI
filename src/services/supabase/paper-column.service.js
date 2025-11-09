@@ -63,8 +63,8 @@ export class PaperColumnService {
 
   // Get all conversations for a specific chatbot
   static async getPaperColumnsByChatbot(chatbotId, limit = 50, offset = 0) {
-    console.log("hit get service");
-    console.log("chatbotId", chatbotId);
+    
+    
     const { data, error } = await supabase
       .from("paper_column")
       .select("*")
@@ -75,7 +75,7 @@ export class PaperColumnService {
       throw new Error(`Error fetching conversations: ${error.message}`);
     }
 
-    console.log("data response data", JSON.stringify(data, null, 2));
+    
 
     return data;
   }

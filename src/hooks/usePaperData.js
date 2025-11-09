@@ -28,10 +28,6 @@ export function usePaperData() {
     setPaperData(paperData.filter((paper) => !selectedPapers.includes(paper.id)));
   };
 
-  React.useEffect(() => {
-    console.log('selectedPapers: ', selectedPapers);
-  }, [selectedPapers]);
-
   return {
     deletePapers,
     paperData,

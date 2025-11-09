@@ -15,7 +15,7 @@ import {
 import { Home, LogIn, LogOutIcon, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { usePathname } from 'next/navigation'
+import { usePathname } from "next/navigation";
 // Menu items.
 const items = [
   {
@@ -26,22 +26,28 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { user, isLoading: authLoading, profile, logout, refreshUserData } = useAuth();
+  const {
+    user,
+    isLoading: authLoading,
+    profile,
+    logout,
+    refreshUserData,
+  } = useAuth();
   const router = useRouter();
-  const pathname = usePathname()
+  const pathname = usePathname();
   const [chatData, setChatData] = useState([]);
-  
+
   useEffect(() => {
     const fetchChatData = async () => {
-      if(!user) return;
+      if (!user) return;
       const response = await fetch("/api/chatbot");
-      if(!response.ok){
+      if (!response.ok) {
         console.error("Error fetching chat data");
         setChatData([]);
         return;
       }
       const data = await response.json();
-      if(data){
+      if (data) {
         setChatData(data);
       } else {
         console.error("Error fetching chat data");
@@ -58,9 +64,14 @@ export function AppSidebar() {
           <SidebarContent>
             <SidebarGroup>
               <SidebarGroupLabel>
-                <h1 className="text-gray-700 text-xl font-bold my-16">
-                  Thesa.AI
-                </h1>
+                {/* <div className="flex"> */}
+                  <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 text-2xl font-extrabold my-6">
+                    Thesa.AI
+                  <span className="text-purple-600 text-xs font-medium">
+                    by Bayu & Zaid
+                  </span>
+                  </h1>
+                {/* </div> */}
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -111,11 +122,13 @@ export function AppSidebar() {
                   </a>
                 </SidebarMenuButton>
                 <SidebarMenuButton asChild>
-                  <button onClick={() => {
-                    logout();
-                    refreshUserData();
-                    setChatData([]);
-                  }}>
+                  <button
+                    onClick={() => {
+                      logout();
+                      refreshUserData();
+                      setChatData([]);
+                    }}
+                  >
                     <LogOutIcon />
                     Log Out
                   </button>

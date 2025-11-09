@@ -34,14 +34,14 @@ export async function GET(req) {
     const chatbotId = searchParams.get("chatbot_id");
     const paperId = searchParams.get("paper_id");
     const columnId = searchParams.get("column_id");
-    const limit = Number.parseInt(searchParams.get("limit") || "50");
+    const limit = Number.parseInt(searchParams.get("limit") || "-1");
     const offset = Number.parseInt(searchParams.get("offset") || "0");
 
     const data = await PaperColumnValueService.getPaperColumnValuesBy(
       chatbotId,
       paperId,
       columnId,
-      limit,
+      limit < 0 ? null : limit,
       offset
     );
 

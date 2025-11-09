@@ -74,7 +74,7 @@ export async function bulkCreatePapers(papers) {
     score: paper.score || null,
   }));
 
-  console.log('formatted: ', JSON.stringify(formatted));
+  
 
   const { data, error } = await supabase.from("paper_data").insert(formatted).select();
   if (error) throw new Error(error.message);

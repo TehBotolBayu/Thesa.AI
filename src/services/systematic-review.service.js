@@ -38,25 +38,25 @@ const EvaluationSchema = z.object({
  * @returns {Promise<Object>} Generated criteria
  */
 export async function generateCriteria(chatHistory, userQuery, paperCount, chatbot_id) {
+  
+
   try {
     // Build chat history context (limit to recent messages to save tokens)
-    const recentMessages = chatHistory.slice(-10); // Last 10 messages
-    const chatContext = recentMessages
-      .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
-      .join('\n\n');
+    // const recentMessages = chatHistory.slice(-10); // Last 10 messages
+    // const chatContext = recentMessages
+    //   .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+    //   .join('\n\n');
+
+    // 
 
     const systemPrompt = new SystemMessage({
-      content: `You are an expert research methodologist specializing in systematic literature reviews.
-Your task is to generate comprehensive review criteria based on the user's research interests and conversation context.`
+      content: `You are a research methodology expert. Generate systematic review criteria based on the user's research interests and conversation context`
     });
 
     const userPrompt = new HumanMessage({
-      content: `Based on the following conversation and research context, generate systematic review criteria for ${paperCount} academic papers:
-
+      content: `Analyze the conversation below to infer the user's research intent and generate systematic review criteria for ${paperCount} academic papers.
 Chat History:
-${chatContext}
-
-${userQuery ? `\nSpecific Research Focus:\n${userQuery}\n` : ''}
+${chatHistory}
 
 Generate:
 1. A clear research question that encompasses the main research themes from the conversation
@@ -66,12 +66,33 @@ Each keyword should be only in one word dor two as phrase in same language as th
 4. Inclusion criteria (3-5 criteria for what papers should be included in the review)
 5. Exclusion criteria (3-5 criteria for what papers should be excluded from the review)
 
-Be specific and actionable in your criteria. Base the criteria on the research interests, topics, and goals discussed in the conversation.`
+Be specific, actionable, and align all outputs with the topics and goals discussed.
+
+Output in json, example:
+{
+  "researchQuestion": "How does federated learning improve privacy and performance in medical image classification?",
+  "keywords": [
+    "federated learning",
+    "privacy",
+  ],
+  "inclusionCriteria": [
+    "Focus on healthcare or medical imaging applications",
+    "Empirical performance evaluation included"
+  ],
+  "exclusionCriteria": [
+    "Without quantitative",
+    "Unrelated to machine learning or healthcare"
+  ]
+}
+
+
+`
     });
+
+    
 
     const structuredLLM = llm.withStructuredOutput(CriteriaSchema);
     const response = await structuredLLM.invoke([systemPrompt, userPrompt]);
-
 
     const inclusionCriteria = safeParseArray(response.inclusionCriteria, "inclusionCriteria");
     const exclusionCriteria = safeParseArray(response.exclusionCriteria, "exclusionCriteria");
@@ -85,11 +106,12 @@ Be specific and actionable in your criteria. Base the criteria on the research i
       exclusionCriteria
     };
 
-    //check if criteria already exists
+    //check if criteria already exists\
+    
     const existingCriteria = await ReviewCriteriaService.getByChatbotId(chatbot_id);
-    console.log('existingCriteria: ', JSON.stringify(existingCriteria, null, 2));
+    
     if(existingCriteria && existingCriteria.length > 0) {
-      console.log('Criteria already exists');
+      
       //update criteria
       const updateResponse = await ReviewCriteriaService.update(existingCriteria.id, criteriaData);
       if(!updateResponse) {
@@ -230,7 +252,7 @@ Return ONLY numerical scores in the exact order listed above.`
     const structuredLLM = llm.withStructuredOutput(EvaluationSchema);
     const response = await structuredLLM.invoke([systemPrompt, userPrompt]);
 
-    console.log('response from evaluatePaper: ', JSON.stringify(response, null, 2));
+    
 
     // Add keyword count to response
     return {
@@ -252,11 +274,11 @@ Return ONLY numerical scores in the exact order listed above.`
  * @returns {Promise<string>} Synthesis report as formatted text
  */
 export async function synthesizeResults(papers, evaluations, extractions, criteria) {
-  console.log('synthesizeResults');
-  console.log('papers: ', JSON.stringify(papers, null, 2));
-  console.log('evaluations: ', JSON.stringify(evaluations, null, 2));
-  console.log('extractions: ', JSON.stringify(extractions, null, 2));
-  console.log('criteria: ', JSON.stringify(criteria, null, 2));
+  
+  
+  
+  
+  
   try {
     // Combine all data for context
     const paperSummaries = papers.map((paper, idx) => {
@@ -276,9 +298,7 @@ Limitation: ${extraction.limitation || 'N/A'}
     const systemPrompt = new SystemMessage({
       content: `You are an expert research synthesizer specializing in systematic literature reviews.
 Your task is to identify patterns, contradictions, and relationships across multiple studies 
-and provide a comprehensive synthesis that addresses the research question.
-
-Format your response as a well-structured markdown document with clear headings and sections.`
+and provide a comprehensive synthesis that addresses the research question.`
     });
 
     const userPrompt = new HumanMessage({
@@ -316,12 +336,12 @@ What should future research focus on?
 
 ---
 
-Be analytical, objective, and evidence-based. Cite patterns across multiple papers. Use markdown formatting for clarity.`
+Be analytical, objective, and evidence-based. Cite patterns across multiple papers`
     });
 
     const response = await llm.invoke([systemPrompt, userPrompt]);
 
-    console.log('response from synthesizeResults: ', JSON.stringify(response, null, 2));
+    
 
     return response.content;
   } catch (error) {

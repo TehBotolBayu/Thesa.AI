@@ -3,8 +3,9 @@ import { Mistral } from "@mistralai/mistralai";
 // import { ChatDeepSeek } from "@langchain/deepseek";
 
 export const llm = new ChatMistralAI({
+  model: "mistral-medium-latest",
   // model: "mistral-medium-latest",
-  model: "mistral-large-latest",
+  // model: "mistral-small-latest",
   temperature: 0,
 });
 

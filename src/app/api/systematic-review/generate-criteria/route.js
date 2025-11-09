@@ -5,9 +5,9 @@ export async function POST(req) {
   try {
     const { chatHistory, userQuery, paperCount, chatbot_id } = await req.json();
 
-    if (!chatHistory || !Array.isArray(chatHistory)) {
+    if (!chatHistory) {
       return NextResponse.json(
-        { error: "Chat history array is required" },
+        { error: "Chat history is required" },
         { status: 400 }
       );
     }
@@ -28,9 +28,6 @@ export async function POST(req) {
 
     // Generate criteria using AI
     const criteria = await generateCriteria(chatHistory, userQuery, paperCount, chatbot_id);
-
-    console.log('Generated criteria: ', JSON.stringify(criteria));
-
     return NextResponse.json({ success: true, data: criteria });
   } catch (error) {
     console.error("Generate criteria API error:", error);

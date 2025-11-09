@@ -82,7 +82,6 @@ export async function POST(req) {
           data: result,
         });
 
-        console.log(`Processed paper: ${paper.id}`);
         // Wait 1 second before next paper
         await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error) {

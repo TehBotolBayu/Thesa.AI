@@ -1,6 +1,6 @@
 "use client";
 import { ChatMessage } from "@/components/ChatMessage";
-import AcademicPaperTable from "@/components/paperTable";
+import AcademicPaperTable from "@/components/paperTable/academicPaperTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { systemPrompt } from "@/const/ai";
@@ -8,11 +8,12 @@ import {
   BookOpen,
   CircleCheck,
   Columns4,
+  FileText,
   FileTextIcon,
   GraduationCap,
   Loader,
-  NewspaperIcon,
   Save,
+  Search,
   Send,
   Trash,
 } from "lucide-react";
@@ -21,7 +22,6 @@ import { useEffect, useRef, useState } from "react";
 import DropdownSelect from "@/components/ui/dropdownSelect";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePaperData } from "@/hooks/usePaperData";
-import { FileText, Search } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/authProvider";
@@ -35,6 +35,7 @@ import Step1Criteria from "./components/systematicReviewSteps/Step1Criteria";
 import Step2Extraction from "./components/systematicReviewSteps/Step2Extraction";
 import Step3Evaluation from "./components/systematicReviewSteps/Step3Evaluation";
 import Step4Synthesis from "./components/systematicReviewSteps/Step4Synthesis";
+import { convertMarkdownToDocx } from "@/lib/document/exporter";
 
 const LiveDemoEditor = dynamic(
   () => import("@/app/editor/components/DemoEditor"),
@@ -118,6 +119,7 @@ const ChatInterface = () => {
     initData: initColumnData,
     postNewColumn,
     triggerFetching,
+    setAdditionalColumn,
   } = useColumn();
 
   useEffect(() => {
@@ -127,10 +129,6 @@ const ChatInterface = () => {
 
   useEffect(() => {
     let currStep = 1;
-    console.log(
-      "additionalColumn: ",
-      JSON.stringify(additionalColumn, null, 2)
-    );
     if (
       additionalColumn.find(
         (column) =>
@@ -156,13 +154,6 @@ const ChatInterface = () => {
             .filter((item) => item.step === "extract_data"),
         };
       });
-
-      console.log("extractionData: ", JSON.stringify(extractionData, null, 2));
-
-      console.log(
-        "extractDataColumn: ",
-        JSON.stringify(extractDataColumn, null, 2)
-      );
       setExtractionResults(extractionData);
       setExtractionProgress({
         total: extractDataColumn.length,
@@ -200,11 +191,6 @@ const ChatInterface = () => {
           };
         });
 
-        console.log(
-          "evaluationData: ",
-          JSON.stringify(evaluationData, null, 2)
-        );
-
         setEvaluationResults(evaluationData);
         setEvaluationProgress({
           total: evaluationData.length,
@@ -220,12 +206,13 @@ const ChatInterface = () => {
 
   useEffect(() => {
     (async () => {
-    if (currentStep === 3) {
-      const response = await fetch("/api/document?chatbot_id=" + chatbotId);
+      if (currentStep === 3) {
+        const response = await fetch("/api/document?chatbot_id=" + chatbotId);
         const data = await response.json();
-        console.log('documentm data: ', JSON.stringify(data, null, 2));
+
+        if (!data || data.length === 0 || !data[0].content) return;
         setSynthesisReport(data[0].content);
-      } 
+      }
     })();
   }, [currentStep]);
 
@@ -253,7 +240,11 @@ const ChatInterface = () => {
         setChatbotId(id);
         initChatData(id);
         fetchPaperData(id);
-        fetchReviewCriteria(id);
+        try {
+          fetchReviewCriteria(id);
+        } catch (error) {
+          console.error("Error fetching review criteria: ", error);
+        }
       }
     })();
   }, [id, user]);
@@ -390,7 +381,6 @@ const ChatInterface = () => {
     setIsLoading(true);
 
     if (user && (!chatbotId || (!newChatBotId.current && !id))) {
-      console.log("buat baru");
       try {
         const response = await fetch("/api/chatbot", {
           method: "POST",
@@ -498,17 +488,19 @@ const ChatInterface = () => {
 
         await sendMessage({
           chatbot_id: chatbotId || newChatBotId.current,
-          message: aiMessage.message,
+          message: aiMessage.message || "Here are the results of paper search",
           sender: "assistant",
           session_id: Date.now().toString(),
         });
 
         if (aiData?.data?.toolResult) {
-          if (paperData && paperData.length > 0) {
-            setPaperData((prev) => [...prev, ...aiData.data.toolResult]);
-          } else {
-            setPaperData(aiData.data.toolResult);
-          }
+          fetchPaperData(chatbotId || newChatBotId.current);
+          // if (paperData && paperData.length > 0) {
+          //   setPaperData((prev) => [...prev, ...aiData.data.toolResult]);
+          // } else {
+          //   fetchPaperData()
+          //   setPaperData(aiData.data.toolResult);
+          // }
         }
         setMessages((prev) => [...prev, aiMessage]);
       } else {
@@ -533,7 +525,11 @@ const ChatInterface = () => {
 
   const handlePostNewColumn = async (columnName, columnInstruction) => {
     setIsShowManageColumn(false);
-    await postNewColumn(chatbotId, columnName, columnInstruction);
+    await postNewColumn(
+      chatbotId || newChatBotId.current,
+      columnName,
+      columnInstruction
+    );
   };
 
   // Systematic Review Handlers
@@ -542,11 +538,18 @@ const ChatInterface = () => {
       setReviewProcessing(true);
       setReviewStatus("in_progress");
 
+      const userMessage = messages
+        .filter((msg) => msg.sender === "user")
+        .map((msg) => ({ userMessage: msg.message }));
+      const msgString = JSON.stringify(userMessage, null, 2);
+
+      // return;
+
       const response = await fetch("/api/systematic-review/generate-criteria", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chatHistory: messages,
+          chatHistory: msgString,
           userQuery: null, // Can be used for additional context if needed
           paperCount: paperData.length,
           chatbot_id: chatbotId,
@@ -554,7 +557,7 @@ const ChatInterface = () => {
       });
 
       if (!response.ok) {
-        console.error("Failed to generate criteria");
+        console.error("Failed to generate criteria: ", response.error);
       }
 
       const result = await response.json();
@@ -641,8 +644,6 @@ const ChatInterface = () => {
       }
 
       const result = await response.json();
-
-      console.log("new generated evaluation results: ", JSON.stringify(result.dxata, null, 2));
       setEvaluationResults(result.data);
 
       const failedCount = result.data.filter((r) => !r.success).length;
@@ -719,8 +720,6 @@ const ChatInterface = () => {
 
     const result = await response.json();
 
-    console.log("Review criteria: ", JSON.stringify(result, null, 2));
-
     setCriteria(result?.data || {});
   };
 
@@ -733,41 +732,53 @@ const ChatInterface = () => {
     return true;
   };
 
+  useEffect(() => {
+    const ws = new WebSocket("ws://localhost:3000/api/socket");
+    ws.onopen = () => {
+      ws.send("Hello, WebSocket!");
+    };
+    ws.onmessage = (event) => {};
+    ws.onclose = () => {};
+    return () => {
+      ws.close();
+    };
+  }, []);
+
   return (
     <div className="h-[calc(100vh-46px)]">
-      <nav className="bg-white border-b border-gray-200 px-6">
-        <div className="flex space-x-8">
+      <nav className="bg-white border-b border-gray-200 px-6 shadow-sm">
+        <div className="flex space-x-2">
           <button
             onClick={() => setActiveTab("research")}
-            className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+            className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "research"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "border-indigo-500 text-indigo-600 bg-indigo-50"
+                : "border-transparent text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/50"
             }`}
           >
-            <Search size={16} />
+            <Search size={18} />
             Search Results
           </button>
           <button
             onClick={() => setActiveTab("editor")}
-            className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+            className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "editor"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "border-indigo-500 text-indigo-600 bg-indigo-50"
+                : "border-transparent text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/50"
             }`}
           >
-            <FileText size={16} />
+            <FileText size={18} />
             Document Editor
           </button>
           <button
             onClick={() => setActiveTab("review")}
-            className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+            className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "review"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "border-indigo-500 text-indigo-600 bg-indigo-50"
+                : "border-transparent text-gray-600 hover:text-indigo-600 hover:bg-indigo-50/50"
             }`}
           >
-            <BookOpen size={16} />
+            <BookOpen size={18} />
             Systematic Review
           </button>
         </div>
@@ -782,39 +793,41 @@ const ChatInterface = () => {
         {activeTab === "research" && (
           <>
             <div
-              className="bg-chatbg h-full overflow-auto"
+              className="bg-chatbg  h-full overflow-auto"
               style={{ width: leftWidth }}
             >
-              <div className="bg-gray-100 px-6 py-4 ">
-                <h1 className="text-xl font-bold ">
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-5 border-b border-gray-200">
+                <h1 className="text-2xl font-bold text-gray-900 mb-3">
                   Academic Paper Information
                 </h1>
-                <div className="flex gap-2 pt-2 flex-wrap">
+                <div className="flex gap-3 pt-2 flex-wrap">
                   <Button
-                    className="bg-white text-black border-gray-300 border"
+                    variant="outline"
+                    className="bg-white"
                     onClick={deletePapers}
                   >
                     <Trash size={16} />
                     Delete Papers
                   </Button>
-                  <div className="w-42">
+                  <div className="w-fit">
                     <DropdownSelect
                       placeholder="Sort By"
                       setSelectedValue={setSortBy}
                       selectionList={[
                         {
-                          value: "relevance_ascending",
+                          value: "relevance_descending",
                           label: "From Most Relevant",
                         },
                         {
-                          value: "relevance_descending",
+                          value: "relevance_ascending",
                           label: "From Least Relevant",
                         },
                       ]}
                     />
                   </div>
                   <Button
-                    className="bg-white text-black border-gray-300 border"
+                    variant="outline"
+                    className="bg-white"
                     onClick={() => setIsShowManageColumn(true)}
                   >
                     <Columns4 size={16} />
@@ -828,22 +841,26 @@ const ChatInterface = () => {
                   setIsShowManageColumn={setIsShowManageColumn}
                   columns={additionalColumn}
                   handlePostNewColumn={handlePostNewColumn}
+                  setColumns={setAdditionalColumn}
                 />
               ) : (
-                <AcademicPaperTable
-                  tableData={paperData}
-                  selectedPapers={selectedPapers}
-                  setSelectedPapers={setSelectedPapers}
-                  paperColumnValuesMap={paperColumnValuesMap}
-                  additionalColumn={additionalColumn}
-                  triggerFetching={triggerFetching}
-                  addPaperColumnValues={addPaperColumnValues}
-                />
+                <div className="max-w-6xl mx-auto p-4">
+                  <AcademicPaperTable
+                    tableData={paperData}
+                    selectedPapers={selectedPapers}
+                    setSelectedPapers={setSelectedPapers}
+                    paperColumnValuesMap={paperColumnValuesMap}
+                    additionalColumn={additionalColumn}
+                    triggerFetching={triggerFetching}
+                    addPaperColumnValues={addPaperColumnValues}
+                  />
+                </div>
               )}
               {/* <divv */}
             </div>
             {/* Divider */}
             <div
+              role="separator"
               onMouseDown={handleMouseDown}
               className="w-1 bg-gray-400 cursor-col-resize hover:bg-gray-600"
             ></div>
@@ -854,13 +871,14 @@ const ChatInterface = () => {
         {activeTab === "editor" && (
           <>
             <div
-              className="bg-chatbg h-full overflow-auto"
-              style={{ width: leftWidth }}
+              className="bg-chatbg h-full overflow-auto overflow-x-auto"
+              style={{ width: leftWidth, whiteSpace: "nowrap" }}
             >
-              <div className="bg-gray-100 py-2 px-6 flex flex-row gap-4 w-full items-center">
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 py-4 px-6 flex flex-row gap-3 w-full items-center border-b border-gray-200">
                 <div>
                   <Button
-                    className="bg-white text-black border-gray-300 border w-fit"
+                    variant="outline"
+                    className="bg-white w-fit"
                     onClick={() => saveDocument(chatbotId)}
                   >
                     {isSaving ? (
@@ -873,7 +891,8 @@ const ChatInterface = () => {
                 </div>
                 <div>
                   <Button
-                    className="bg-white text-black border-gray-300 border w-fit"
+                    variant="outline"
+                    className="bg-white w-fit"
                     onClick={() => handleExportDoc()}
                   >
                     {isExporting ? (
@@ -884,11 +903,13 @@ const ChatInterface = () => {
                     Export to doc
                   </Button>
                 </div>
-                <div className=" text-black flex flex-row gap-2 items-center">
+                <div className="text-gray-900 flex flex-row gap-2 items-center">
                   {isSaved && (
                     <>
                       <CircleCheck className="text-green-500" />
-                      Saved
+                      <span className="font-semibold text-green-700">
+                        Saved
+                      </span>
                     </>
                   )}
                 </div>
@@ -908,6 +929,7 @@ const ChatInterface = () => {
             </div>
             {/* Divider */}
             <div
+              role="separator"
               onMouseDown={handleMouseDown}
               className="w-1 bg-gray-400 cursor-col-resize hover:bg-gray-600"
             ></div>
@@ -918,10 +940,10 @@ const ChatInterface = () => {
         {activeTab === "review" && (
           <>
             <div
-              className="bg-chatbg h-full overflow-auto"
+              className="bg-chatbg h-full w-full overflow-auto overflow-x-auto"
               style={{ width: leftWidth }}
             >
-              <div className="bg-gray-100 px-6 py-4 ">
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-5 border-b border-gray-200">
                 <StepProgressBar
                   currentStep={currentStep}
                   setCurrentStep={setCurrentStep}
@@ -984,6 +1006,7 @@ const ChatInterface = () => {
             </div>
             {/* Divider */}
             <div
+              role="separator"
               onMouseDown={handleMouseDown}
               className="w-1 bg-gray-400 cursor-col-resize hover:bg-gray-600"
             ></div>
@@ -994,10 +1017,9 @@ const ChatInterface = () => {
         <div
           className={`flex-1 h-full overflow-auto`}
           style={{ width: rightWidth }}
-          // style={{ width: paperData || docData ? leftWidth : "100%" }}
         >
           <div
-            className={`w-full bg-chatbg h-full relative flex flex-col  overflow-hidden py-8 md:px-16 px-4  max-w-5xl mx-auto ${
+            className={`w-full h-full relative flex flex-col  overflow-hidden py-8 md:px-16 px-4  max-w-5xl mx-auto ${
               !(messages && messages.length > 0) && "justify-center"
             }`}
           >
@@ -1016,10 +1038,17 @@ const ChatInterface = () => {
               }}
             >
               {(!messages || messages.length <= 0) && (
-                <div className="flex flex-row justify-center items-center ">
-                  <h1 className="text-2xl font-semibold text-primary">
+                <div className="flex flex-col justify-center items-center gap-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                    <GraduationCap size={32} className="text-white" />
+                  </div>
+                  <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
                     How can I help you?
                   </h1>
+                  <p className="text-gray-600 text-center max-w-md">
+                    Ask me anything about your research, or let me help you with
+                    literature reviews and document writing.
+                  </p>
                 </div>
               )}
 
@@ -1031,9 +1060,9 @@ const ChatInterface = () => {
                     ))}
 
                     {oldDocData && (
-                      <div className="mx-15 flex flex-row gap-2 -mt-6">
+                      <div className="mx-15 flex flex-row gap-3 -mt-6">
                         <Button
-                          className="bg-red-500 hover:bg-red-500/90 text-white"
+                          className="bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-md"
                           onClick={() => {
                             rejectChanges();
                           }}
@@ -1041,7 +1070,7 @@ const ChatInterface = () => {
                           Reject
                         </Button>
                         <Button
-                          className="bg-primarylight hover:bg-primarylight/90 text-white"
+                          className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-md"
                           onClick={() => {
                             acceptChanges();
                           }}
@@ -1052,12 +1081,30 @@ const ChatInterface = () => {
                     )}
 
                     {isLoading && (
-                      <div className="flex justify-start">
-                        <div className="flex-shrink-0 w-8 h-8 mr-4 rounded-full flex items-center justify-center bg-chatbg">
-                          <GraduationCap size={24} />
+                      <div className="flex justify-start gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
+                          <GraduationCap size={20} className="text-white" />
                         </div>
-                        <div className="px-4 italic animate-customPulse">
-                          Generating answer...
+                        <div className="px-5 py-3.5 rounded-2xl rounded-tl-none bg-white border border-gray-200 shadow-md">
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-1">
+                              <span
+                                className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"
+                                style={{ animationDelay: "0s" }}
+                              ></span>
+                              <span
+                                className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"
+                                style={{ animationDelay: "0.2s" }}
+                              ></span>
+                              <span
+                                className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"
+                                style={{ animationDelay: "0.4s" }}
+                              ></span>
+                            </div>
+                            <span className="text-gray-600 text-sm ml-2">
+                              Generating answer...
+                            </span>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -1067,22 +1114,22 @@ const ChatInterface = () => {
             </div>
 
             {/* Input Area - FIXED: Removed sticky positioning that can cause issues */}
-            <div className="chatinputarea  w-full ">
-              <div className="border-t  bg-secondary backdrop-blur-sm rounded-md container mx-auto p-4 ">
+            <div className="chatinputarea w-full  ">
+              <div className="border-t  rounded-xl bg-white backdrop-blur-sm container mx-auto p-4 shadow-lg">
                 <div className="flex gap-3">
                   <Input
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask anything..."
-                    className="flex-1 bg-primary-input"
+                    className="flex-1"
                   />
                   <Button
                     onClick={handleSendMessage}
                     disabled={!inputMessage.trim() || isLoading}
-                    className="gap-2 bg-primarylight text-white cursor-pointer"
+                    className="gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white cursor-pointer"
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="h-5 w-5" />
                     <span className="hidden sm:block"> Send </span>
                   </Button>
                 </div>

@@ -6,22 +6,22 @@ export default function StyledSelect({placeholder, setSelectedValue, selectionLi
 
   return (
         <Select.Root onValueChange={setSelectedValue} defaultValue={selectionList[0].value}>
-          <Select.Trigger className="inline-flex items-center justify-between w-full px-4 py-2.5 bg-chatbg border border-gray-300 rounded-lg text-sm text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <Select.Trigger className="inline-flex items-center justify-between w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-900 hover:bg-gray-50 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 shadow-sm">
             <Select.Value placeholder={placeholder} />
             <Select.Icon className="ml-2">
-              <ChevronDown size={16} className="text-gray-500" />
+              <ChevronDown size={18} className="text-gray-500" />
             </Select.Icon>
           </Select.Trigger>
 
           <Select.Portal>
-            <Select.Content className="overflow-hidden bg-chatbg rounded-lg shadow-lg border border-gray-200 w-[var(--radix-select-trigger-width)]">
-              <Select.ScrollUpButton className="flex items-center justify-center h-6 bg-chatbg text-gray-700 cursor-default">
+            <Select.Content className="overflow-hidden bg-white rounded-xl shadow-xl border border-gray-200 w-[var(--radix-select-trigger-width)] animate-in fade-in-0 zoom-in-95 duration-200">
+              <Select.ScrollUpButton className="flex items-center justify-center h-8 bg-white text-gray-700 cursor-default hover:bg-gray-50">
                 <ChevronUp size={16} />
               </Select.ScrollUpButton>
               
-              <Select.Viewport className="p-1">
+              <Select.Viewport className="p-2">
                 <Select.Group>
-                  <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase ">
+                  <Select.Label className="px-3 py-2 text-xs font-light text-gray-500 uppercase tracking-wider">
                     {placeholder}
                   </Select.Label>
                   {selectionList.map((item) => (
@@ -30,7 +30,7 @@ export default function StyledSelect({placeholder, setSelectedValue, selectionLi
                 </Select.Group>
               </Select.Viewport>
 
-              <Select.ScrollDownButton className="flex items-center justify-center h-6 bg-chatbg text-gray-700 cursor-default">
+              <Select.ScrollDownButton className="flex items-center justify-center h-8 bg-white text-gray-700 cursor-default hover:bg-gray-50">
                 <ChevronDown size={16} />
               </Select.ScrollDownButton>
             </Select.Content>
@@ -44,12 +44,15 @@ const SelectItem = React.forwardRef(({ children, value, ...props }, forwardedRef
     <Select.Item
       value={value}
       ref={forwardedRef}
-      className="relative flex items-center px-3 py-2 text-sm text-gray-900 rounded cursor-pointer select-none hover:bg-gray-100 focus:bg-gray-100 focus:outline-none data-[highlighted]:bg-gray-100 data-[state=checked]:bg-blue-50 data-[state=checked]:text-blue-900"
+      className={`relative flex items-center px-4 py-3 text-sm font-medium text-gray-900 rounded-lg whitespace-nowrap
+        cursor-pointer select-none hover:bg-primary/5 focus:bg-primary/5 focus:outline-none data-[highlighted]:bg-primary/5 
+        data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-indigo-50 data-[state=checked]:to-purple-50 
+        data-[state=checked]:text-indigo-900 transition-colors duration-150 ${props.className} nowrap`}
       {...props}
     >
       <Select.ItemText>{children}</Select.ItemText>
-      <Select.ItemIndicator className="absolute right-3 inline-flex items-center">
-        <Check size={16} className="text-blue-600" />
+      <Select.ItemIndicator className="absolute right-4 inline-flex items-center">
+        <Check size={18} className="text-indigo-600" />
       </Select.ItemIndicator>
     </Select.Item>
   );

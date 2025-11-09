@@ -36,16 +36,16 @@ export default function StepProgressBar({
 
   return (
     <>
-      <h1 className="text-xl font-bold ">Systematic Literature Review</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">Systematic Literature Review</h1>
       {(reviewStatus === "in_progress" || reviewStatus === "not_started") && (
         <>
-          <div className="relative my-4">
+          <div className="relative my-6">
             {/* Background Line */}
-            <div className="absolute top-5 left-0 w-full h-1 bg-gray-200"></div>
+            <div className="absolute top-5 left-0 w-full h-2 bg-gray-200 rounded-full"></div>
 
-            {/* Active Line */}
+            {/* Active Line with Gradient */}
             <div
-              className="absolute top-5 left-0 h-1 bg-blue-600 transition-all duration-500 ease-in-out"
+              className="absolute top-5 left-0 h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500 ease-in-out shadow-md"
               style={{
                 width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`,
               }}
@@ -58,11 +58,11 @@ export default function StepProgressBar({
                   {/* Dot */}
                   <button
                     onClick={() => goToStep(step.id)}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
+                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${
                       currentStep >= step.id
-                        ? "bg-blue-600 text-white shadow-lg scale-110"
-                        : "bg-white text-gray-400 border-2 border-gray-300"
-                    } hover:scale-125 focus:outline-none focus:ring-4 focus:ring-blue-300`}
+                        ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/50 scale-110 ring-4 ring-indigo-100"
+                        : "bg-white text-gray-400 border-2 border-gray-300 hover:border-indigo-300"
+                    } hover:scale-125 focus:outline-none focus:ring-4 focus:ring-indigo-200`}
                   >
                     {currentStep > step.id ? (
                       <svg
@@ -95,14 +95,14 @@ export default function StepProgressBar({
           </div>
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between">
+          <div className="flex justify-between mt-6">
             <button
               onClick={prevStep}
               disabled={currentStep === 1}
-              className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+              className={`px-8 py-3.5 rounded-xl font-semibold transition-all duration-200 ${
                 currentStep === 1
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-gray-600 text-white hover:bg-gray-700 hover:shadow-lg"
+                  : "bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-gray-700 hover:to-gray-800 hover:shadow-lg shadow-md"
               }`}
             >
               Previous
@@ -111,10 +111,10 @@ export default function StepProgressBar({
             <button
               onClick={nextStep}
               disabled={currentStep === steps.length}
-              className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+              className={`px-8 py-3.5 rounded-xl font-semibold transition-all duration-200 ${
                 currentStep === steps.length
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg"
+                  : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg shadow-md"
               }`}
             >
               {currentStep === steps.length ? "Completed" : "Next"}

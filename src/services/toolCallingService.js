@@ -33,15 +33,13 @@ export const namesToFunctions = {
       const res = await fetch(urlfetch, {
         method: "GET",
         headers: {
-          "x-api-key": "qYN0UCM19Y53e0D87fopI3ae1bGrt0yc1BsYOX02",
+          "x-api-key": process.env.SEMANTIC_SCHOLAR_KEY_API,
         },
       });
       const data = await res.json();
-      if(data)
-        console.log('get semantic scholar data: urlfetch', urlfetch, data?.data?.length);
-
-      // const arxivData = await searchArxiv(query);
-
+      
+      const arxivData = await searchArxiv(query);
+      
       let resultData = data.data.map((paper) => ({
         title: paper.title,
         abstract: paper.abstract,
@@ -49,29 +47,27 @@ export const namesToFunctions = {
         pdfUrl: paper.openAccessPdf?.url || null,
         authors: paper.authors?.map((a) => a.name),
       }));
-
-      // resultData = [ ...resultData, ...arxivData ];
-
-      // console.log('resultData: ', JSON.stringify(resultData));
+      
+      resultData = [ ...resultData, ...arxivData ];
 
       resultData = resultData.map((paper, index) => ({
         ...paper,
-        score: index + 1,
+        id: index,
       }));
       // 
-      return JSON.stringify(resultData);
+      return JSON.stringify({data: resultData, query});
     } catch (err) {
-      // let arxivData = await searchArxiv(query);
-      // if (arxivData?.length > 0) {
-      //   arxivData = arxivData.map((paper, index) => ({
-      //     ...paper,
-      //     score: index + 1,
-      //   }));
-      //   console.log('arxivData: ', JSON.stringify(arxivData));
-      //   return JSON.stringify(arxivData);
-      // }
-      // console.log('arxivData: ', JSON.stringify(arxivData));
-      console.log('error: ', err.message);
+      let arxivData = await searchArxiv(query);
+      if (arxivData?.length > 0) {
+        arxivData = arxivData.map((paper, index) => ({
+          ...paper,
+          id: index,
+        }));
+        
+        return JSON.stringify({data: arxivData, query});
+      }
+      
+      
       return JSON.stringify([{
         error: err.message,
         title: "",

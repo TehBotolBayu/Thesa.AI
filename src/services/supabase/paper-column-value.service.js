@@ -30,8 +30,8 @@ export class PaperColumnValueService {
     chatbotId = null,
     paperId = null,
     columnId = null,
-    limit = 50,
-    offset = 0
+    limit = null,
+    offset = null
   ) {
     let query = supabase
       .from("paper_column_value")
@@ -48,7 +48,9 @@ export class PaperColumnValueService {
       query = query.eq("column_id", columnId);
     }
 
-    query = query.range(offset, offset + limit - 1);
+    if(limit !== null && offset !== null) {
+      query = query.range(offset, offset + limit - 1);
+    }
 
     const { data, error } = await query;
 
@@ -120,7 +122,7 @@ export class PaperColumnValueService {
   // ⚡️ Bulk insert multiple rows
   static async bulkInsertPaperColumnValues(records = []) {
 
-    console.log('bulkInsertPaperColumnValues records: ', JSON.stringify(records));
+    
     if (!Array.isArray(records) || records.length === 0) {
       throw new Error("bulkInsertPaperColumnValues requires a non-empty array");
     }

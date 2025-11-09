@@ -131,8 +131,6 @@ export async function POST(req) {
           },
         ];
 
-        console.log('columnValues result from evaluatePaper: ', JSON.stringify(columnValues, null, 2));
-
         // Add inclusion criteria scores
         for (const [idx, score] of evaluation.inclusionScores.entries()) {
           columnValues.push({
@@ -166,7 +164,6 @@ export async function POST(req) {
           data: columnValues,
         });
 
-        console.log(`Evaluated paper: ${paper.id}`);
         // Wait 1 second before next paper
         await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error) {

@@ -29,7 +29,7 @@ export class DocumentService {
       throw new Error(`Error fetching conversations: ${error.message}`);
     }
 
-    console.log('document data: ', JSON.stringify(data, null, 2));
+    
     return data;
   }
 

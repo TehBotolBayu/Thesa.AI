@@ -7,7 +7,7 @@ export async function POST(req) {
     const body = await req.json();
     const { chatbot_id, label, instruction } = body;
 
-    if (!chatbot_id || !label) {
+    if (!chatbot_id || !label || chatbot_id.trim() === '' || label.trim() === '') {
       return NextResponse.json(
         { error: "chatbot_id and label are required" },
         { status: 400 }
@@ -34,8 +34,6 @@ export async function GET(req) {
     const limit = Number.parseInt(searchParams.get("limit") || "50");
     const offset = Number.parseInt(searchParams.get("offset") || "0");
 
-    console.log("hit get paper columns route");
-    console.log("chatbotId", chatbotId);
     if (!chatbotId) {
       return NextResponse.json(
         { error: "chatbot_id query param is required" },

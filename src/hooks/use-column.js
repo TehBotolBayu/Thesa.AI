@@ -15,9 +15,7 @@ export function useColumn() {
       const columns = await fetchColumns(chatbot_id);
       const values = await fetchColumnValues(chatbot_id);
 
-      console.log("columns response data", JSON.stringify(columns, null, 2));
-      
-      setAdditionalColumn(columns? columns : []);
+      setAdditionalColumn(columns ? columns : []);
       const map = mapListPaperColumnValues(papers, columns, values);
       setPaperColumnValuesMap(map);
       setIsFetching(false);
@@ -34,7 +32,8 @@ export function useColumn() {
         `/api/paper-columns?chatbot_id=${chatbot_id}`
       );
       if (!response.ok) {
-        throw new Error("Failed to fetch columns");
+        console.error("Failed to fetch columns");
+        return;
       }
       const columns = await response.json();
       return columns;
@@ -61,29 +60,37 @@ export function useColumn() {
   }
 
   function mapListPaperColumnValues(papers, columns, values) {
-    if(!papers || !columns || !values) return;
+    console.log('vales here: ', JSON.stringify(values, 2, null))
+    if (!papers || !columns || !values) return;
     const map = {};
     for (const paper of papers) {
       map[paper.id] = {};
+
       for (const column of columns) {
-        map[paper.id][column.id] = {...values.find(
+        let valueData = values.find(
           (value) =>
             value.paper_id === paper.id && value.column_id === column.id
-        ), label: column.label, step: column.step || ''};
+        );
+        map[paper.id][column.id] = {
+          ...valueData,
+          label: column.label,
+          step: column.step || "",
+        };
       }
     }
     return map;
   }
 
   function addPaperColumnValues(values) {
-    if(!values || values.length === 0) { console.log("addPaperColumnValues values is empty"); return};
-    console.log("addPaperColumnValues values: ", JSON.stringify(values, null, 2));
-    const newMap = {...paperColumnValuesMap};
+    if (!values || values.length === 0) {
+      return;
+    }
+    const newMap = { ...paperColumnValuesMap };
     for (const value of values) {
       // Create a new object for the nested level to ensure React detects the change
       newMap[value.paper_id] = {
         ...newMap[value.paper_id],
-        [value.column_id]: {...value }
+        [value.column_id]: { ...value },
       };
     }
     setPaperColumnValuesMap(newMap);
@@ -108,8 +115,10 @@ export function useColumn() {
       }
 
       const column = await response.json();
-      console.log("column response data", JSON.stringify(column, null, 2))
-      setAdditionalColumn((prevColumns) => [...prevColumns, {...column, isFetching: true}]);
+      setAdditionalColumn((prevColumns) => [
+        ...prevColumns,
+        { ...column, isFetching: true },
+      ]);
       return column;
     } catch (err) {
       console.error("Error creating column:", err.message);
@@ -118,7 +127,11 @@ export function useColumn() {
   }
 
   function triggerFetching(columnId, isFetching) {
-    setAdditionalColumn((prevColumns) => prevColumns.map((column) => column.id === columnId ? {...column, isFetching: isFetching} : column));
+    setAdditionalColumn((prevColumns) =>
+      prevColumns.map((column) =>
+        column.id === columnId ? { ...column, isFetching: isFetching } : column
+      )
+    );
   }
 
   return {
@@ -132,5 +145,6 @@ export function useColumn() {
     isFetching,
     postNewColumn,
     triggerFetching,
+    setAdditionalColumn,
   };
 }

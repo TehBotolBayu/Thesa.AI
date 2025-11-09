@@ -1,6 +1,4 @@
-import { ColumnValueArraySchema } from "@/schema/writerSchema";
-import { getAIResponse, testFuncton } from "./ai.service";
-import { llm } from "@/lib/llm/model";
+import { getAIResponse } from "./ai.service";
 
 export async function paperAnalyticService(papersData = [], column) {
   // get all paper data
@@ -57,7 +55,6 @@ export async function sequentialPaperAnalyticService(papersData = [], column) {
         step: column.step || '',
       });
     }
-    console.log("processed paper: ", paper.id); 
     // Wait for 1 second before continuing to next paper
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
@@ -67,7 +64,7 @@ export async function sequentialPaperAnalyticService(papersData = [], column) {
 // Helper function - implement your actual analysis logic here
 async function performAnalysis(paper, column) {
   //   call llm
-  console.log("performAnalysis;: ", paper.id);
+  
   const serialized = "";
   const analystSystemPrompt =
     "youre AI agent that help analyze document. Be direct and concise.";
@@ -86,10 +83,6 @@ async function performAnalysis(paper, column) {
     `;
 
   const response = await getAIResponse(serialized, prompt, analystSystemPrompt);
-  console.log(
-    "response from ai performAnalysis: ",
-    response?.content
-  );
 
   return response.content;
 }

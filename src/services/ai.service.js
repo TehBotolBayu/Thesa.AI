@@ -11,10 +11,7 @@ import {
   SystemMessage,
 } from "@langchain/core/messages";
 import { namesToFunctions, tools } from "./toolCallingService";
-
-export function testFuncton() {
-  return "asdkjfb";
-}
+import { rerankerService } from "./reranker.service";
 
 export async function getAIResponse(
   serialized,
@@ -22,11 +19,6 @@ export async function getAIResponse(
   defaultSystemPrompt = `You are AI Agent that will help user`,
   schema = null
 ) {
-  // console.log("getAIResponse is starting");
-  // console.log("serialized: ", serialized);
-  // console.log("prompt: ", prompt);
-  // console.log("defaultSystemPrompt: ", defaultSystemPrompt);
-
   try {
     let memory = [];
     if (serialized) {
@@ -45,7 +37,7 @@ export async function getAIResponse(
     const systemPrompt = new SystemMessage({ content: defaultSystemPrompt });
     memory = memory.length > 0 ? [systemPrompt, ...memory] : [systemPrompt];
 
-    console.log("adding structured output");
+    
 
     let response = "";
 
@@ -57,13 +49,10 @@ export async function getAIResponse(
         new HumanMessage(prompt),
       ]);
     } else {
-      response = await llm.invoke([
-        ...memory,
-        new HumanMessage(prompt),
-      ]);
+      response = await llm.invoke([...memory, new HumanMessage(prompt)]);
     }
 
-    // console.log("Response received:", response);
+    // 
     return response;
   } catch (err) {
     console.error("❌ Error in getAIResponse:", err);
@@ -121,25 +110,38 @@ export async function getAIPaperResponse(
   // Step D: Append results back into conversation safely
   const assistantMsg = response.choices[0].message;
 
-  // Only push if valid (non-empty content or has tool_calls)
-  // if (
-  //   assistantMsg.content?.trim() ||
-  //   (assistantMsg.tool_calls && assistantMsg.tool_calls.length > 0)
-  // ) {
   messages.push(assistantMsg);
-  // } else  {
-  //   messages.push({
-  //     role: "assistant",
-  //     content: 'here are result from the tool',
-  //   });
-  // }
 
-  const toolResult = JSON.parse(functionResult);
-  const toolResultSimplified = toolResult.map((paper, index) => ({
-    title: paper.title,
+  let toolResult = JSON.parse(functionResult).data;
+  const query = JSON.parse(functionResult).query;
+  const rerankerInput = toolResult.map((paper, index) => ({
+    id: paper.id,
+    data: paper.title,
     abstract: paper.abstract,
+    // },
   }));
-  console.log("toolResultSimplified: ", JSON.stringify(toolResultSimplified));
+
+  const rerankedToolResult = await rerankerService(rerankerInput, query);
+
+  const dataSummary = rerankedToolResult.map((item) => item.dataSummary);
+  
+
+
+  const toolResultSimplified = rerankedToolResult.map((item) => ({
+    id: item.id,
+    title: toolResult.find((input) => input.id === item.id)?.title,
+    dataSummary: item.dataSummary,
+    pdfUrl: toolResult.find((input) => input.id === item.id)?.pdfUrl,
+  }));
+
+  
+  
+
+  toolResult = toolResult.map((item) => ({
+    ...item,
+    score: rerankedToolResult.find((rerankedItem) => rerankedItem.id === item.id)?.score,
+  }));
+
 
   messages.push({
     role: "tool",
@@ -157,7 +159,8 @@ export async function getAIPaperResponse(
 
   return {
     finalAnswer: response.choices[0].message.content,
-    toolResult: JSON.parse(functionResult), // raw data from API
+    toolResult: toolResult, // raw data from API
+    rerankedToolResult: rerankedToolResult,
   };
 }
 

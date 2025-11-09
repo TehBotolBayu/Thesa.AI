@@ -15,7 +15,7 @@ export function useChat() {
   
 
   async function sendMessage({ chatbot_id, message, sender, session_id }) {
-    console.log("sendMessage: ", JSON.stringify({ chatbot_id, message, sender, session_id }, null, 2));
+    
     try {
       const res = await fetch("/api/conversations", {
         method: "POST",

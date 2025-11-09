@@ -5,16 +5,17 @@ export async function POST(req) {
   const body = await req.json();
   const { chatbot_id, message, sender, session_id } = body;
 
-  if (!chatbot_id || !message || !sender) {
+
+  if (!chatbot_id || !sender) {
     return NextResponse.json(
-      { error: "chatbot_id, message, and sender are required" },
+      { error: "chatbot_id and sender are required" },
       { status: 400 }
     );
   }
 
   const { data, error } = await supabase
     .from("chatbot_conversations")
-    .insert([{ chatbot_id, message, sender, session_id }])
+    .insert([{ chatbot_id, message: message || "", sender, session_id }])
     .select()
     .single();
 

@@ -14,15 +14,15 @@ export async function GET(req, { params }) {
         inclusionCriteria: data.inclusion_criteria,
         exclusionCriteria: data.exclusion_criteria
       };
-
-
-      console.log("Criteria data from route : ", JSON.stringify(criteriaData, null, 2));
         return NextResponse.json({ success: true, data: criteriaData });
     }
 
     return NextResponse.json({ error: "No criteria found" }, { status: 404 });
   } catch (error) {
     console.error("Get criteria API error:", error);
+    if(error.message.includes('Cannot coerce the result')){
+      return NextResponse.json({ error: "No criteria found" }, { status: 404 });
+    }
     return NextResponse.json(
       { error: "Failed to get criteria", details: error.message },
       { status: 500 }

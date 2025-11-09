@@ -36,7 +36,7 @@ export const ReviewCriteriaService = {
     if (error) throw new Error(error.message);
     
     
-    console.log("getAll Review criteria: ", JSON.stringify(data, null, 2));
+    
     
     return data;
   },

@@ -16,7 +16,6 @@ export async function POST(req) {
     const response = await getAIPaperResponse(prompt, serialized);
 
     const paperData = await response?.toolResult;
-    console.log('paperData: ', JSON.stringify(paperData));
     if (paperData && chatbotId) {
       const paperDataWithChatbotId = paperData.map((paper) => ({
         ...paper,

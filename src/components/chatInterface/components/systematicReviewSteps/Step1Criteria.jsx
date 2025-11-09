@@ -48,7 +48,7 @@ export default function Step1Criteria({
   };
 
   useEffect(() => {
-    console.log("Criteria: ", JSON.stringify(criteria, null, 2));
+    
     const hasGeneratedCriteria = criteria && criteria.researchQuestion;
     setHasGeneratedCriteria(hasGeneratedCriteria);
   }, [criteria]);

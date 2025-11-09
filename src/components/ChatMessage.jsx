@@ -120,22 +120,22 @@ export const ChatMessage = ({ message, ...props }) => {
     <div>
       <div
         className={cn(
-          "flex gap-3 ",
+          "flex gap-4 ",
           isUser ? "justify-end" : "justify-start flex-col md:flex-row"
         )}
       >
         {!isUser && (
-          <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-chatbg">
-            <GraduationCap size={24} />
+          <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
+            <GraduationCap size={20} className="text-white" />
           </div>
         )}
 
         <div
           className={cn(
-            "relative rounded-br-2xl rounded-bl-2xl px-4 py-3  word-break break-words",
+            "relative rounded-2xl px-5 py-3.5 word-break break-words shadow-md transition-all duration-200",
             isUser
-              ? "bg-chat-bubble-user text-primaryDark rounded-tl-2xl md:max-w-[80%]"
-              : "text-grey-800 rounded-tr-2xl w-full"
+              ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-br-none md:max-w-[80%] hover:shadow-lg"
+              : "bg-white border border-gray-200 text-gray-800 rounded-tl-none w-full hover:shadow-lg"
           )}
         >
           <div className="markdown">
@@ -183,8 +183,8 @@ export const ChatMessage = ({ message, ...props }) => {
           {isUser && (
             <p
               className={cn(
-                "text-xs mt-1 opacity-70",
-                isUser ? "text-primaryDark" : "text-primaryDark"
+                "text-xs mt-1.5 opacity-80",
+                isUser ? "text-white" : "text-gray-500"
               )}
             >
               {time?.toLocaleTimeString([], {
@@ -196,8 +196,8 @@ export const ChatMessage = ({ message, ...props }) => {
         </div>
 
         {isUser && (
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-            <User className="h-4 w-4 text-secondary-foreground" />
+          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+            <User className="h-5 w-5 text-white" />
           </div>
         )}
       </div>

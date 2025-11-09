@@ -32,8 +32,12 @@ export default function Step3Evaluation({
   };
 
   useEffect(() => {
-    console.log("columns: ", JSON.stringify(columns, null, 2));
+    
     let legend ={}
+    
+    if(!criteria || criteria.length === 0 || !criteria.inclusionCriteria || !criteria.exclusionCriteria) {
+      return;
+    }
     const inclusionCriteria = criteria.inclusionCriteria.map(item => ({
       label: item,
       color: "green"
@@ -46,7 +50,7 @@ export default function Step3Evaluation({
       inclusionCriteria: inclusionCriteria,
       exclusionCriteria: exclusionCriteria
     }
-    console.log("legend: ", JSON.stringify(legend, null, 2));
+    
     setCriteriaLegend(legend);
   }, [columns, criteria]);
 
