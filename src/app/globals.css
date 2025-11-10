@@ -293,3 +293,11 @@ del {
   /* Optional: You can also set width to 0px for a more aggressive removal */
   width: 0px;
 }
+
+.container-y {
+  /* Forces the vertical scrollbar */
+  overflow-y: scroll;
+  /* Prevents horizontal scrolling */
+  overflow-x: hidden;
+  border: 1px solid #ccc;
+}

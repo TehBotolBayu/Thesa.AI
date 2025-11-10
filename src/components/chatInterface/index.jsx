@@ -36,6 +36,7 @@ import Step2Extraction from "./components/systematicReviewSteps/Step2Extraction"
 import Step3Evaluation from "./components/systematicReviewSteps/Step3Evaluation";
 import Step4Synthesis from "./components/systematicReviewSteps/Step4Synthesis";
 import { convertMarkdownToDocx } from "@/lib/document/exporter";
+import CollapseButton from "../ui/collapseButton";
 
 const LiveDemoEditor = dynamic(
   () => import("@/app/editor/components/DemoEditor"),
@@ -91,8 +92,8 @@ const ChatInterface = () => {
   const inputElementRef = useRef(null);
   const [isShowManageColumn, setIsShowManageColumn] = useState(false);
   const [viewMode, setViewMode] = useState("rich-text");
-  const [leftWidth, setLeftWidth] = useState(300); // starting width
-  const [rightWidth, setrightWidth] = useState(400);
+  const [leftWidth, setLeftWidth] = useState("70%"); // starting width
+  const [rightWidth, setrightWidth] = useState(0);
   const containerRef = useRef(null);
   const isDragging = useRef(false);
   const chatContainerRef = useRef(null);
@@ -274,19 +275,6 @@ const ChatInterface = () => {
   };
 
   useEffect(() => {
-    (() => {
-      const containerRect = containerRef.current.getBoundingClientRect();
-
-      if (openProp.state == "expanded") {
-        setrightWidth(200);
-        setLeftWidth("50%");
-      } else {
-        setLeftWidth((p) => p + 256);
-      }
-    })();
-  }, [openProp]);
-
-  useEffect(() => {
     if (paperData && paperData.length > 0) {
       setActiveTab("research");
     }
@@ -308,34 +296,67 @@ const ChatInterface = () => {
     return () => clearTimeout(timer);
   }, [messages, isLoading]);
 
-  useEffect(() => {
-    if ((paperData || docData) && containerRef.current) {
-      const containerRect = containerRef.current.getBoundingClientRect();
-      setLeftWidth(containerRect.width * 0.5); // left = 70%, right = 30%
-    } else {
-      setLeftWidth("100%");
-    }
-  }, [paperData, docData]);
+  // screen resize effect utility
 
-  const handleMouseDown = () => {
-    isDragging.current = true;
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  };
+  // useEffect(() => {
+  // if ((paperData || docData) && containerRef.current) {
+  //   const containerRect = containerRef.current.getBoundingClientRect();
+  //   setLeftWidth(containerRect.width * 0.5); // left = 70%, right = 30%
+  // } else {
+  //   setLeftWidth("100%");
+  // }
+  // }, [paperData, docData]);
 
-  const handleMouseMove = (e) => {
-    if (!isDragging.current || !containerRef.current) return;
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const newWidth = e.clientX - containerRect.left; // distance from container left
-    if (newWidth > 100 && newWidth < containerRect.width - 400) {
-      //
-      if (openProp.state == "expanded") {
-        if (newWidth + 256 >= containerRect.width - 656) return;
-        setLeftWidth((p) => p - 256);
-      }
-      setLeftWidth(newWidth);
-    }
-  };
+  // const handleMouseDown = () => {
+  //   isDragging.current = true;
+  //   document.addEventListener("mousemove", handleMouseMove);
+  //   document.addEventListener("mouseup", handleMouseUp);
+  // };
+
+  // useEffect(() => {
+  //   (() => {
+  //     const containerRect = containerRef.current.getBoundingClientRect();
+
+  //     if (openProp.state == "expanded") {
+  //       setrightWidth(200);
+  //       setLeftWidth("50%");
+  //     } else {
+  //       setLeftWidth((p) => p + 256);
+  //     }
+  //   })();
+  // }, [openProp]);
+
+  // new one, not quite working
+  //   useEffect(() => {
+  //   (() => {
+  //     const containerRect = containerRef.current.getBoundingClientRect();
+
+  //     if (openProp.state == "expanded") {
+  //       alert("expanded");
+  //       setrightWidth("calc(50% - 200px)");
+  //       setLeftWidth("calc(50% - 200px)");
+  //     } else {
+  //       alert("collapsed");
+  //       setLeftWidth("50%");
+  //       setLeftWidth("50%");
+  //     }
+  //   })();
+  // }, [openProp, containerRef]);
+
+  // const handleMouseMove = (e) => {
+  //   if (!isDragging.current || !containerRef.current) return;
+  //   const containerRect = containerRef.current.getBoundingClientRect();
+  //   const newWidth = e.clientX - containerRect.left; // distance from container left
+  //   if (newWidth > 100 && newWidth < containerRect.width - 200) {
+  //     //
+  //     if (openProp.state == "expanded") {
+  //       if (newWidth + 256 >= containerRect.width - 456) return;
+  //       setLeftWidth((p) => p - 256);
+  //     }
+  //     setLeftWidth(newWidth);
+  //   }
+  // };
+  // screen resize effect utility
 
   const handleMouseUp = () => {
     isDragging.current = false;
@@ -747,12 +768,17 @@ const ChatInterface = () => {
     };
   }, []);
 
+  const handleActiveTab = (tab) => {
+    setActiveTab(tab);
+    setLeftWidth("70%");
+  };
+
   return (
     <div className="h-[calc(100vh-47px)]">
-      <nav className="bg-white border-b border-gray-200 px-6 shadow-sm">
-        <div className="flex space-x-2">
+      <nav className=" border-b border-gray-200 px-6 shadow-sm ">
+        <div className="flex gap-4 w-full justify-center flex-row space-x-2">
           <button
-            onClick={() => setActiveTab("research")}
+            onClick={() => handleActiveTab("research")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "research"
                 ? "border-blue-500 text-blue-600 bg-blue-50"
@@ -763,7 +789,7 @@ const ChatInterface = () => {
             Search Results
           </button>
           <button
-            onClick={() => setActiveTab("editor")}
+            onClick={() => handleActiveTab("editor")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "editor"
                 ? "border-blue-500 text-blue-600 bg-blue-50"
@@ -774,7 +800,7 @@ const ChatInterface = () => {
             Document Editor
           </button>
           <button
-            onClick={() => setActiveTab("review")}
+            onClick={() => handleActiveTab("review")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "review"
                 ? "border-blue-500 text-blue-600 bg-blue-50"
@@ -789,7 +815,7 @@ const ChatInterface = () => {
 
       <div
         ref={containerRef}
-        className="flex w-full w-max-screen border h-full"
+        className={`flex w-full w-max-screen border h-full`}
         style={{ userSelect: isDragging.current ? "none" : "auto" }}
       >
         {/* second Panel */}
@@ -800,7 +826,7 @@ const ChatInterface = () => {
               style={{ width: leftWidth }}
             >
               <div className="bg-gradient-to-r from-blue-50 to-blue-50 px-6 py-5 border-b border-gray-200">
-                <h1 className="text-2xl font-bold text-gray-900 mb-3">
+                <h1 className="text-2xl font-semibold text-gray-900 mb-3">
                   Academic Paper Information
                 </h1>
                 <div className="flex gap-3 pt-2 flex-wrap">
@@ -862,11 +888,11 @@ const ChatInterface = () => {
               {/* <divv */}
             </div>
             {/* Divider */}
-            <div
+            {/* <div
               role="separator"
               onMouseDown={handleMouseDown}
               className="w-1 bg-gray-400 cursor-col-resize hover:bg-gray-600"
-            ></div>
+            ></div> */}
           </>
         )}
 
@@ -931,11 +957,11 @@ const ChatInterface = () => {
               {/* <divv */}
             </div>
             {/* Divider */}
-            <div
+            {/* <div
               role="separator"
               onMouseDown={handleMouseDown}
               className="w-1 bg-gray-400 cursor-col-resize hover:bg-gray-600"
-            ></div>
+            ></div> */}
           </>
         )}
 
@@ -1008,17 +1034,25 @@ const ChatInterface = () => {
               {/* <divv */}
             </div>
             {/* Divider */}
-            <div
+            {/* <div
               role="separator"
               onMouseDown={handleMouseDown}
               className="w-1 bg-gray-400 cursor-col-resize hover:bg-gray-600"
-            ></div>
+            ></div> */}
           </>
+        )}
+
+        {leftWidth !== 0 && (
+          <div className="absolute top-[50%] translate-y-[-50%] right-[28%] cursor-pointer z-100">
+            <CollapseButton
+              onClick={() => setLeftWidth(leftWidth === 0 ? "70%" : 0)}
+            />
+          </div>
         )}
 
         {/* first Panel */}
         <div
-          className={`flex-1 h-full overflow-auto`}
+          className={`flex-1 h-full  overflow-auto `}
           style={{ width: rightWidth }}
         >
           <div
@@ -1028,7 +1062,7 @@ const ChatInterface = () => {
           >
             <div
               ref={chatContainerRef}
-              className={`scrollbar-hide overflow-y-scroll container mx-auto px-4 py-6 
+              className={`overflow-x-hidden overflow-y-scroll container mx-auto px-1 py-6 
               ${
                 messages && messages.length > 0
                   ? "flex-1"

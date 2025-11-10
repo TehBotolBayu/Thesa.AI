@@ -36,7 +36,7 @@ export default function StepProgressBar({
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Systematic Literature Review</h1>
+      <h1 className="text-2xl font-semibold text-gray-900 mb-2">Systematic Literature Review</h1>
       {(reviewStatus === "in_progress" || reviewStatus === "not_started") && (
         <>
           <div className="relative my-6">

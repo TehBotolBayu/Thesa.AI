@@ -40,13 +40,13 @@ export const ChatMessage = ({ message, ...props }) => {
 
         <div
           className={cn(
-            "relative rounded-2xl px-5 py-3.5 word-break break-words transition-all duration-200",
+            "relative rounded-2xl px-5 py-3.5 word-break break-words transition-all duration-200 min-w-0",
             isUser
               ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md rounded-br-none md:max-w-[80%] hover:shadow-lg"
               : "bg-whitetext-gray-800 w-full"
           )}
         >
-          <div className="markdown">
+          <div className="markdown w-full min-w-0">
             {isUser ? (
               message.message
             ) : (
