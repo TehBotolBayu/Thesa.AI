@@ -1,4 +1,5 @@
 import { getAIResponse } from "./ai.service";
+import { queryPineCone } from "./pinecone";
 
 export async function paperAnalyticService(papersData = [], column) {
   // get all paper data
@@ -64,6 +65,8 @@ export async function sequentialPaperAnalyticService(papersData = [], column) {
 // Helper function - implement your actual analysis logic here
 async function performAnalysis(paper, column) {
   //   call llm
+  // query pinecone for relevant context
+  const relevantContext = await queryPineCone('convi', column.instruction, paper.pdfUrl);
   
   const serialized = "";
   const analystSystemPrompt =
@@ -75,6 +78,7 @@ async function performAnalysis(paper, column) {
   otherwise, reply “No information found.” 
   Reject if the instruction is outside your role.
         Document abstract: ${paper.abstract}
+        ${relevantContext && 'Relevant context from the paper: ' + relevantContext}
         Column to fill: ${JSON.stringify({
           columnId: column.id,
           columnInstruction: column.instruction,

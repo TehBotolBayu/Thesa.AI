@@ -1,6 +1,8 @@
+export const runtime = "nodejs"; // IMPORTANT: disable edge runtime
 import { getAIPaperResponse } from "@/services/ai.service";
 import { NextResponse } from "next/server";
 import { bulkCreatePapers } from "@/services/supabase/paperData.service";
+import { extractPdfTextFromUrl } from "@/lib/paperPDFUtil";
 
 export async function POST(req) {
   try {
@@ -16,6 +18,21 @@ export async function POST(req) {
     const response = await getAIPaperResponse(prompt, serialized);
 
     const paperData = await response?.toolResult;
+
+    // parse text from paper data pdfUrl
+    const pdfTexts = [];
+    for (const paper of paperData) {
+      if (!paper.pdfUrl) continue;
+      console.log("extracting paper: ", paper.title, " from: ", paper.pdfUrl);
+      const pdfText = await extractPdfTextFromUrl(paper.pdfUrl);
+
+      // upsert paper to pinecone
+      const result = await batchUpsertPineCone(paper.title, pdfText, paper.pdfUrl);
+
+      pdfTexts.push(pdfText);
+    }
+    console.log("pdfTexts:", pdfTexts);
+
     if (paperData && chatbotId) {
       const paperDataWithChatbotId = paperData.map((paper) => ({
         ...paper,

@@ -1039,7 +1039,7 @@ const ChatInterface = () => {
           </>
         )}
 
-        {leftWidth !== 0 && (
+        {leftWidth !== 0 && activeTab.trim() !== "" && (
           <div className="absolute top-[50%] translate-y-[-50%] right-[28%] cursor-pointer z-100">
             <CollapseButton
               onClick={() => setLeftWidth(leftWidth === 0 ? "70%" : 0)}
@@ -1059,11 +1059,11 @@ const ChatInterface = () => {
           >
             <div
               ref={chatContainerRef}
-              className={`overflow-x-hidden overflow-y-scroll container mx-auto px-1 py-6 
+              className={`overflow-x-hidden overflow-y-scroll container mx-auto px-1 py-6   
               ${
                 messages && messages.length > 0
                   ? "flex-1"
-                  : " h-fit flex items-center flex-col justify-center"
+                  : " h-fit flex items-center flex-col justify-center hide-scrollbar"
               }
               `}
               style={{

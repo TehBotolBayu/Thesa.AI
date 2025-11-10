@@ -9,7 +9,7 @@ export function useChat() {
   const [fetchStatus, setFetchStatus] = useState("loading");
   
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("chat");
+  const [activeTab, setActiveTab] = useState("");
   const [mode, setMode] = useState("literature");
   const [chatbotId, setChatbotId] = useState(null);
   

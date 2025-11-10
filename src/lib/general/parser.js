@@ -26,3 +26,11 @@ export const LinkRenderer = ({ href, children, ...props }) => {
     </a>
   );
 };
+
+export function unicodeToAscii(str) {
+  // Step 1: remove accents/diacritics
+  let ascii = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  // Step 2: replace non-ASCII characters
+  ascii = ascii.replace(/[^\x00-\x7F]/g, "?");
+  return ascii;
+}

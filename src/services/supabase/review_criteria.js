@@ -33,10 +33,7 @@ export const ReviewCriteriaService = {
     if (chatbot_id) query = query.eq("chatbot_id", chatbot_id);
 
     const { data, error } = await query;
-    if (error) throw new Error(error.message);
-    
-    
-    
+    if (error) throw new Error(error.message);    
     
     return data;
   },

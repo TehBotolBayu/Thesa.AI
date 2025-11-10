@@ -86,7 +86,7 @@ export async function getAIPaperResponse(
   let messages = [...memory];
   // Step A: Send user query to Mistral with tools
   let response = await mistralClient.chat.complete({
-    model: "mistral-medium-latest",
+    model: "mistral-large-latest",
     messages,
     tools,
     toolChoice: "auto",
@@ -153,7 +153,7 @@ export async function getAIPaperResponse(
 
   // Step E: Get final AI answer
   response = await mistralClient.chat.complete({
-    model: "mistral-medium-latest",
+    model: "mistral-large-latest",
     messages,
   });
 
