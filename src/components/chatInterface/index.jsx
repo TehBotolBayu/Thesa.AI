@@ -94,6 +94,7 @@ const ChatInterface = () => {
   const [viewMode, setViewMode] = useState("rich-text");
   const [leftWidth, setLeftWidth] = useState("70%"); // starting width
   const [rightWidth, setrightWidth] = useState(0);
+  const [containerWidth, setContainerWidth] = useState("w-screen");
   const containerRef = useRef(null);
   const isDragging = useRef(false);
   const chatContainerRef = useRef(null);
@@ -327,21 +328,17 @@ const ChatInterface = () => {
   // }, [openProp]);
 
   // new one, not quite working
-  //   useEffect(() => {
-  //   (() => {
-  //     const containerRect = containerRef.current.getBoundingClientRect();
+    useEffect(() => {
+    (() => {
+      // const containerRect = containerRef.current.getBoundingClientRect();
 
-  //     if (openProp.state == "expanded") {
-  //       alert("expanded");
-  //       setrightWidth("calc(50% - 200px)");
-  //       setLeftWidth("calc(50% - 200px)");
-  //     } else {
-  //       alert("collapsed");
-  //       setLeftWidth("50%");
-  //       setLeftWidth("50%");
-  //     }
-  //   })();
-  // }, [openProp, containerRef]);
+      if (openProp.state == "expanded") {
+        setContainerWidth("w-[calc(100vw-256px)]");
+      } else {
+        setContainerWidth("w-screen");
+      }
+    })();
+  }, [openProp, containerRef]);
 
   // const handleMouseMove = (e) => {
   //   if (!isDragging.current || !containerRef.current) return;
@@ -781,8 +778,8 @@ const ChatInterface = () => {
             onClick={() => handleActiveTab("research")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "research"
-                ? "border-blue-500 text-blue-600 bg-blue-50"
-                : "border-transparent text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
+                ? "border-blue-500 text-blue-600 "
+                : "border-transparent text-gray-600 hover:text-blue-600"
             }`}
           >
             <Search size={18} />
@@ -792,8 +789,8 @@ const ChatInterface = () => {
             onClick={() => handleActiveTab("editor")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "editor"
-                ? "border-blue-500 text-blue-600 bg-blue-50"
-                : "border-transparent text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
+                ? "border-blue-500 text-blue-600 "
+                : "border-transparent text-gray-600 hover:text-blue-600"
             }`}
           >
             <FileText size={18} />
@@ -803,8 +800,8 @@ const ChatInterface = () => {
             onClick={() => handleActiveTab("review")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "review"
-                ? "border-blue-500 text-blue-600 bg-blue-50"
-                : "border-transparent text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
+                ? "border-blue-500 text-blue-600 "
+                : "border-transparent text-gray-600 hover:text-blue-600"
             }`}
           >
             <BookOpen size={18} />
@@ -815,7 +812,7 @@ const ChatInterface = () => {
 
       <div
         ref={containerRef}
-        className={`flex w-full w-max-screen border h-full`}
+        className={`flex border h-full ${containerWidth}`}
         style={{ userSelect: isDragging.current ? "none" : "auto" }}
       >
         {/* second Panel */}
@@ -873,7 +870,7 @@ const ChatInterface = () => {
                   setColumns={setAdditionalColumn}
                 />
               ) : (
-                <div className="max-w-6xl mx-auto p-4 ">
+                <div className="p-4">
                   <AcademicPaperTable
                     tableData={paperData}
                     selectedPapers={selectedPapers}
@@ -1079,7 +1076,7 @@ const ChatInterface = () => {
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
                     <GraduationCap size={32} className="text-white" />
                   </div>
-                  <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-600">
+                  <h1 className="text-3xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-600">
                     How can I help you?
                   </h1>
                   <p className="text-gray-600 text-center max-w-md">

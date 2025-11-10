@@ -44,7 +44,7 @@ const Modal = ({
               <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full mb-5 shadow-lg">
                 <CheckCircle className="w-10 h-10 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-3">
                 {title}
               </h2>
               <p className="text-gray-600 mb-8 leading-relaxed">
@@ -62,7 +62,7 @@ const Modal = ({
               <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-400 to-rose-500 rounded-full mb-5 shadow-lg">
                 <AlertTriangle className="w-10 h-10 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-3">
                 {title}
               </h2>
               <p className="text-gray-600 mb-8 leading-relaxed">

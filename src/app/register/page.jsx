@@ -98,7 +98,7 @@ const RegisterPage = () => {
 
       <Card className="w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold ">Sign Up</CardTitle>
+          <CardTitle className="text-2xl font-semibold ">Sign Up</CardTitle>
           <CardDescription>
             Please enter your email and password.
           </CardDescription>

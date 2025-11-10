@@ -108,7 +108,7 @@ const LoginPage = () => {
 
       <Card className="w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold ">Login</CardTitle>
+          <CardTitle className="text-2xl font-semibold ">Login</CardTitle>
           <CardDescription>
             Please enter your username and password.
           </CardDescription>

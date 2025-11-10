@@ -1,7 +1,7 @@
 export const HeroTitle = ({ text, className = '' }) => {
   return (
     <h1
-    className={`md:text-5xl text-2xl font-bold 
+    className={`md:text-5xl text-2xl font-semibold 
       text-gray-800 bg-black
       w-fit ${className}
       `}
@@ -14,7 +14,7 @@ export const HeroTitle = ({ text, className = '' }) => {
 export const HeroTitle2 = ({ text, className = '' }) => {
   return (
     <h1
-    className={`z-40 text-5xl font-bold 
+    className={`z-40 text-5xl font-semibold 
       bg-linear-to-tr from-light-blue to-dark-blue text-white 
       w-fit ${className}
       `}
@@ -25,7 +25,7 @@ export const HeroTitle2 = ({ text, className = '' }) => {
 export const HeroTitle3 = ({ text, className = '' }) => {
   return (
     <h1
-    className={`md:text-3xl text-xl font-bold 
+    className={`md:text-3xl text-xl font-semibold 
       bg-linear-to-tr from-light-blue to-dark-blue text-white 
       w-fit ${className}
       `}
@@ -36,7 +36,7 @@ export const HeroTitle3 = ({ text, className = '' }) => {
 export const SubTitleTextBig = ({ text, className = '' }) => {
   return (
     <p className={
-      `md:text-3xl text-2xl font-bold text-black ${className}` 
+      `md:text-3xl text-2xl font-semibold text-black ${className}` 
     }>
       {text}
     </p>

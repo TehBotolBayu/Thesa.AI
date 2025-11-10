@@ -208,19 +208,19 @@ export default function Step3Evaluation({
               <h3 className="font-semibold text-gray-800 mb-3">Evaluation Summary</h3>
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center p-3 bg-green-50 rounded">
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-2xl font-semibold text-green-600">
                     {evaluationResults.filter(r => r.success && r.data.overallScore >= 7).length}
                   </div>
                   <div className="text-xs text-gray-600">High Score (7-10)</div>
                 </div>
                 <div className="text-center p-3 bg-yellow-50 rounded">
-                  <div className="text-2xl font-bold text-yellow-600">
+                  <div className="text-2xl font-semibold text-yellow-600">
                     {evaluationResults.filter(r => r.success && r.data.overallScore >= 4 && r.data.overallScore < 7).length}
                   </div>
                   <div className="text-xs text-gray-600">Medium Score (4-6)</div>
                 </div>
                 <div className="text-center p-3 bg-red-50 rounded">
-                  <div className="text-2xl font-bold text-red-600">
+                  <div className="text-2xl font-semibold text-red-600">
                     {evaluationResults.filter(r => r.success && r.data.overallScore < 4).length}
                   </div>
                   <div className="text-xs text-gray-600">Low Score (0-3)</div>

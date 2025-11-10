@@ -44,7 +44,7 @@ const ChatbotEmailForm = () => {
   return (
     <div className=" shadow-2xl w-full max-w-sm flex flex-col border border-white rounded-md">
       <div className="text-center bg-primary p-4 ">
-        <h2 className="text-xl font-bold text-white mb-2">Need more help?</h2>
+        <h2 className="text-xl font-semibold text-white mb-2">Need more help?</h2>
         <p className="text-white ">Fill out your details below and an admin will contact you shortly</p>
       </div>
       <div className="bg-chatbg p-8 ">

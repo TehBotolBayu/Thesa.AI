@@ -58,7 +58,7 @@ export default function StepProgressBar({
                   {/* Dot */}
                   <button
                     onClick={() => goToStep(step.id)}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${
+                    className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
                       currentStep >= step.id
                         ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50 scale-110 ring-4 ring-blue-100"
                         : "bg-white text-gray-400 border-2 border-gray-300 hover:border-blue-300"
@@ -99,10 +99,10 @@ export default function StepProgressBar({
             <button
               onClick={prevStep}
               disabled={currentStep === 1}
-              className={`px-8 py-3.5 rounded-xl font-semibold transition-all duration-200 ${
+              className={`px-8 py-2 rounded-lg font-semibold transition-all duration-200 ${
                 currentStep === 1
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-gray-700 hover:to-gray-800 hover:shadow-lg shadow-md"
+                  : "bg-gradient-to-r from-violet-600 to-violet-700 text-white hover:from-violet-700 hover:to-violet-800 hover:shadow-lg shadow-md"
               }`}
             >
               Previous
@@ -111,7 +111,7 @@ export default function StepProgressBar({
             <button
               onClick={nextStep}
               disabled={currentStep === steps.length}
-              className={`px-8 py-3.5 rounded-xl font-semibold transition-all duration-200 ${
+              className={`px-8 py-2 rounded-lg font-semibold transition-all duration-200 ${
                 currentStep === steps.length
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                   : "bg-gradient-to-r from-blue-600 to-blue-600 text-white hover:from-blue-700 hover:to-blue-700 hover:shadow-lg shadow-md"

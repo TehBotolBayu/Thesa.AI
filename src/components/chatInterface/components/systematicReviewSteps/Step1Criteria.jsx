@@ -172,7 +172,7 @@ export default function Step1Criteria({
             <ul className="space-y-2 mb-3">
               {criteria.inclusionCriteria.map((item, index) => (
                 <li key={index} className="flex items-start gap-2 text-sm">
-                  <span className="text-green-600 font-bold">✓</span>
+                  <span className="text-green-600 font-semibold">✓</span>
                   <span className="flex-1">{item}</span>
                   <button
                     onClick={() => handleCriteriaRemove('inclusionCriteria', index)}
@@ -202,7 +202,7 @@ export default function Step1Criteria({
             <ul className="space-y-2 mb-3">
               {criteria.exclusionCriteria.map((item, index) => (
                 <li key={index} className="flex items-start gap-2 text-sm">
-                  <span className="text-red-600 font-bold">×</span>
+                  <span className="text-red-600 font-semibold">×</span>
                   <span className="flex-1">{item}</span>
                   <button
                     onClick={() => handleCriteriaRemove('exclusionCriteria', index)}
