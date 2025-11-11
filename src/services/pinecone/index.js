@@ -1,7 +1,7 @@
-import { embeddings } from "../llm/model";
 import { pinecone } from "@/config/pinecone";
 import { unicodeToAscii } from "@/lib/general/parser";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { embeddings } from "@/lib/llm/model";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
 export const queryPineCone = async (indexName, userQuery, namespace) => {
   let relevantContext = "";
@@ -39,6 +39,10 @@ export const queryPineCone = async (indexName, userQuery, namespace) => {
 };
 
 export const batchUpsertPineCone = async (title, content, namespace) => {
+  console.log('bacthUpsert')
+  console.log(title)
+  console.log(content)
+  console.log(namespace)
   try {
     // Get Pinecone index
     const index = pinecone.index("convi");

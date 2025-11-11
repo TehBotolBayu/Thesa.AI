@@ -3,6 +3,7 @@ import { getAIPaperResponse } from "@/services/ai.service";
 import { NextResponse } from "next/server";
 import { bulkCreatePapers } from "@/services/supabase/paperData.service";
 import { extractPdfTextFromUrl } from "@/lib/paperPDFUtil";
+import { batchUpsertPineCone } from "@/services/pinecone";
 
 export async function POST(req) {
   try {
@@ -28,7 +29,7 @@ export async function POST(req) {
 
       // upsert paper to pinecone
       const result = await batchUpsertPineCone(paper.title, pdfText, paper.pdfUrl);
-
+      console.log("pinecone result: ", result)
       pdfTexts.push(pdfText);
     }
     console.log("pdfTexts:", pdfTexts);
