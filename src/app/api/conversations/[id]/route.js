@@ -9,7 +9,8 @@ export async function GET(req, { params }) {
   const { data, error } = await supabase
     .from("chatbot_conversations")
     .select("*")
-    .eq("chatbot_id", id);
+    .eq("chatbot_id", id)
+    .order("created_at", { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
 

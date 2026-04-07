@@ -25,14 +25,14 @@ const MarkdownParser = ({ content, ...props }) => {
         // Custom link component with styling
         a: LinkRenderer,
         // Optional: Style other elements
-        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+        p: ({ children }) => <p className="mb-2 last:mb-0 text-sm">{children}</p>,
         ul: ({ children }) => (
-          <ul className="list-disc pl-4 mb-2">{children}</ul>
+          <ul className="list-disc pl-4 mb-2 text-sm">{children}</ul>
         ),
         ol: ({ children }) => (
-          <ol className="list-decimal pl-4 mb-2">{children}</ol>
+          <ol className="list-decimal pl-4 mb-2 text-sm">{children}</ol>
         ),
-        li: ({ children }) => <li className="mb-1">{children}</li>,
+        li: ({ children }) => <li className="mb-1 text-sm">{children}</li>,
         code: ({ inline, children }) =>
           inline ? (
             <code className="bg-gray-700 px-1 py-0.5 rounded text-sm">

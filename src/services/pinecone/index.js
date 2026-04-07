@@ -9,6 +9,9 @@ export const queryPineCone = async (indexName, userQuery, namespace) => {
     const index = pinecone.index(indexName);
     // Create query embedding
     const queryEmbedding = await embeddings.embedQuery(userQuery);
+
+    console.log(`[Pinecone Request] Index: ${indexName}, Namespace: ${namespace}, Query: ${userQuery}`);
+
     // Query Pinecone for similar documents
     const queryResponse = await index.query({
       vector: queryEmbedding,
@@ -16,6 +19,9 @@ export const queryPineCone = async (indexName, userQuery, namespace) => {
       includeMetadata: true,
       namespace: namespace,
     });
+
+    console.log(`[Pinecone Response] Namespace: ${namespace}, Matches:`, JSON.stringify(queryResponse, null, 2));
+
     // Extract relevant context from retrieved documents
     if (queryResponse.matches && queryResponse.matches.length > 0) {
       const contextParts = queryResponse.matches
@@ -25,7 +31,7 @@ export const queryPineCone = async (indexName, userQuery, namespace) => {
 
       relevantContext = contextParts.join("\n\n");
       console.log(
-        `Retrieved ${contextParts.length} relevant medical documents from Pinecone`
+        `Retrieved ${contextParts.length} relevant context parts from Pinecone namespace: ${namespace}`
       );
     }
 
@@ -59,7 +65,7 @@ export const batchUpsertPineCone = async (title, content, namespace) => {
     const embeddingsList = await Promise.all(embeddingPromises);
     // Store embeddings in Pinecone with metadata
     let cleanedtitle = unicodeToAscii(title);
-    console.log("cleanedtitle:", cleanedtitle);
+    // console.log("cleanedtitle:", cleanedtitle);
     const vectors = chunks.map((chunk, i) => ({
       id: `${cleanedtitle.replace(/ /g, "-")}-${i}-${Date.now()}`,
       values: embeddingsList[i],

@@ -62,14 +62,11 @@ export function AppSidebar() {
       {pathname !== "/login" && pathname !== "/register" && (
         <Sidebar>
           <SidebarContent>
-            <SidebarGroup>
+            <SidebarGroup  className="bg-red-500 sticky top-0  bg-white z-1">
               <SidebarGroupLabel>
                 {/* <div className="flex"> */}
                   <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-600 text-2xl font-extrabold my-6">
                     Thesa.AI
-                  {/* <span className="text-blue-600 text-xs font-medium">
-                    by Bayu & Zaid
-                  </span> */}
                   </h1>
                 {/* </div> */}
               </SidebarGroupLabel>

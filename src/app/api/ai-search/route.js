@@ -7,7 +7,8 @@ import { batchUpsertPineCone } from "@/services/pinecone";
 
 export async function POST(req) {
   try {
-    const { serialized, message, chatbotId } = await req.json();
+    const body = await req.json();
+    const { serialized, message, chatbotId, namespaces } = body;
     if (!message) {
       return NextResponse.json(
         { error: "message is required" },
@@ -15,34 +16,78 @@ export async function POST(req) {
       );
     }
 
-    const prompt = `${message}`;
-    const response = await getAIPaperResponse(prompt, serialized);
+    const encoder = new TextEncoder();
+    
+    const stream = new ReadableStream({
+      async start(controller) {
+        const sendProgress = (step) => {
+          const data = JSON.stringify({ type: "progress", message: step });
+          controller.enqueue(encoder.encode(data + "\n"));
+        };
 
-    const paperData = await response?.toolResult;
+        const sendToken = (token) => {
+          const data = JSON.stringify({ type: "token", token });
+          controller.enqueue(encoder.encode(data + "\n"));
+        };
 
-    // parse text from paper data pdfUrl
-    const pdfTexts = [];
-    for (const paper of paperData) {
-      if (!paper.pdfUrl) continue;
-      console.log("extracting paper: ", paper.title, " from: ", paper.pdfUrl);
-      const pdfText = await extractPdfTextFromUrl(paper.pdfUrl);
+        try {
+          const prompt = `${message}`;
+          const response = await getAIPaperResponse(prompt, serialized, namespaces, sendProgress, sendToken);
 
-      // upsert paper to pinecone
-      const result = await batchUpsertPineCone(paper.title, pdfText, paper.pdfUrl);
-      console.log("pinecone result: ", result)
-      pdfTexts.push(pdfText);
-    }
-    console.log("pdfTexts:", pdfTexts);
+          const paperData = await response?.toolResult;
 
-    if (paperData && chatbotId) {
-      const paperDataWithChatbotId = paperData.map((paper) => ({
-        ...paper,
-        chatbotId,
-      }));
-      const bulkPaperData = await bulkCreatePapers(paperDataWithChatbotId);
-    }
+          if (paperData && Array.isArray(paperData)) {
+            const pdfTexts = [];
+            for (let i = 0; i < paperData.length; i++) {
+              const paper = paperData[i];
+              if (!paper.pdfUrl) continue;
+              sendProgress(`Extracting and storing document (${i + 1}/${paperData.length})...`);
+              console.log("extracting paper: ", paper.title, " from: ", paper.pdfUrl);
+              let pdfText;
+              try {
+                pdfText = await extractPdfTextFromUrl(paper.pdfUrl);
+              } catch (err) {
+                console.error("PDF Extraction failed for:", paper.pdfUrl, err);
+                continue;
+              }
 
-    return NextResponse.json({ success: true, data: response });
+              const result = await batchUpsertPineCone(paper.title, pdfText, paper.pdfUrl);
+              console.log("pinecone result: ", result)
+              pdfTexts.push(pdfText);
+            }
+            console.log("pdfTexts:", pdfTexts.length);
+
+            if (chatbotId) {
+              sendProgress("Saving papers to database...");
+              const paperDataWithChatbotId = paperData.map((paper) => ({
+                ...paper,
+                chatbotId,
+              }));
+              await bulkCreatePapers(paperDataWithChatbotId);
+            }
+          }
+
+          const successPayload = response?.streamed
+            ? { ...response, finalAnswer: undefined }
+            : response;
+          const finalData = JSON.stringify({ type: "success", data: successPayload });
+          controller.enqueue(encoder.encode(finalData + "\n"));
+          controller.close();
+        } catch (error) {
+          console.error("Stream Error:", error);
+          const errData = JSON.stringify({ type: "error", message: error.message });
+          controller.enqueue(encoder.encode(errData + "\n"));
+          controller.close();
+        }
+      }
+    });
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "application/x-ndjson",
+        "Cache-Control": "no-cache",
+      },
+    });
   } catch (error) {
     console.error("AI API error:", error);
     return NextResponse.json(

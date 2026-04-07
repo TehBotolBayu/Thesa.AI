@@ -33,17 +33,17 @@ export const ChatMessage = ({ message, ...props }) => {
         )}
       >
         {!isUser && (
-          <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
-            <GraduationCap size={20} className="text-white" />
+          <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
+            <GraduationCap size={16} className="text-white" />
           </div>
         )}
 
         <div
           className={cn(
-            "relative rounded-2xl px-5 py-3.5 word-break break-words transition-all duration-200 min-w-0",
+            "relative rounded-xl px-3.5 py-2 word-break break-words transition-all duration-200 min-w-0 text-xs sm:text-sm",
             isUser
-              ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md rounded-br-none md:max-w-[80%] hover:shadow-lg"
-              : "bg-whitetext-gray-800 w-full"
+              ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm rounded-br-none md:max-w-[80%] hover:shadow-md"
+              : "bg-white text-gray-800 w-full"
           )}
         >
           <div className="markdown w-full min-w-0">
@@ -69,8 +69,8 @@ export const ChatMessage = ({ message, ...props }) => {
         </div>
 
         {isUser && (
-          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
-            <User className="h-5 w-5 text-white" />
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md">
+            <User className="h-4 w-4 text-white" />
           </div>
         )}
       </div>

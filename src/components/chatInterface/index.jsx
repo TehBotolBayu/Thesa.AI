@@ -3,6 +3,7 @@ import { ChatMessage } from "@/components/ChatMessage";
 import AcademicPaperTable from "@/components/paperTable/academicPaperTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { systemPrompt } from "@/const/ai";
 import {
   BookOpen,
@@ -92,6 +93,7 @@ const ChatInterface = () => {
   const inputElementRef = useRef(null);
   const [isShowManageColumn, setIsShowManageColumn] = useState(false);
   const [viewMode, setViewMode] = useState("rich-text");
+  const [loadingStepText, setLoadingStepText] = useState("Generating answer...");
   const [leftWidth, setLeftWidth] = useState("70%"); // starting width
   const [rightWidth, setrightWidth] = useState(0);
   const [containerWidth, setContainerWidth] = useState("w-screen");
@@ -100,6 +102,7 @@ const ChatInterface = () => {
   const chatContainerRef = useRef(null);
   const openProp = useSidebar();
   const newChatBotId = useRef("");
+  const streamedTextRef = useRef("");
   const [sortBy, setSortBy] = useState("");
   const {
     saveDocument,
@@ -384,6 +387,9 @@ const ChatInterface = () => {
   const handleSendMessage = async () => {
     if (!inputRef.current.trim()) return;
     inputElementRef.current.value = "";
+    if (inputElementRef.current) {
+      inputElementRef.current.style.height = "auto";
+    }
 
     const userMessage = {
       id: Date.now().toString(),
@@ -398,6 +404,7 @@ const ChatInterface = () => {
       setMessages([userMessage]);
     }
     setIsLoading(true);
+    setLoadingStepText("Analyzing request...");
 
     if (user && (!chatbotId || (!newChatBotId.current && !id))) {
       try {
@@ -423,7 +430,6 @@ const ChatInterface = () => {
         }
 
         const data = await response.json();
-        // bug ai not answering after user send message
         newChatBotId.current = data.id;
         setChatbotId(data.id);
         window.history.pushState(undefined, "Title", `/c/${data.id}`);
@@ -462,15 +468,84 @@ const ChatInterface = () => {
         serialized: [{ type: "system", content: systemPrompt }, ...serialized],
         message: userMessage.message,
         chatbotId: chatbotId || newChatBotId.current,
+        namespaces: paperData && Array.isArray(paperData) ? paperData.filter(p => p.pdfUrl).map(p => p.pdfUrl) : [],
       };
 
       let aiResponseRes = null;
+      let aiData = null;
       if (mode === "literature") {
         aiResponseRes = await fetch("/api/ai-search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
+
+        if (aiResponseRes.ok) {
+          const reader = aiResponseRes.body.getReader();
+          const decoder = new TextDecoder("utf-8");
+          let buffer = "";
+          const streamingMsgId = Date.now().toString() + "-ai-stream";
+          let isStreaming = false;
+          streamedTextRef.current = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+
+            buffer = lines.pop() || "";
+
+            for (const line of lines) {
+              if (line.trim()) {
+                try {
+                  const data = JSON.parse(line);
+                  if (data.type === "progress") {
+                    setLoadingStepText(data.message);
+                  } else if (data.type === "token") {
+                    if (!isStreaming) {
+                      isStreaming = true;
+                      setIsLoading(false);
+                      streamedTextRef.current = data.token;
+                      setMessages((prev) => [
+                        ...prev,
+                        { id: streamingMsgId, message: data.token, sender: "assistant", created_at: new Date(), streaming: true },
+                      ]);
+                    } else {
+                      streamedTextRef.current += data.token;
+                      setMessages((prev) =>
+                        prev.map((m) =>
+                          m.id === streamingMsgId
+                            ? { ...m, message: m.message + data.token }
+                            : m
+                        )
+                      );
+                    }
+                  } else if (data.type === "success") {
+                    if (isStreaming) {
+                      // Finalize the streamed message
+                      setMessages((prev) =>
+                        prev.map((m) =>
+                          m.id === streamingMsgId ? { ...m, streaming: false } : m
+                        )
+                      );
+                      aiData = { data: { finalAnswer: null, toolResult: data.data?.toolResult, streamed: true } };
+                    } else {
+                      aiData = data;
+                    }
+                  } else if (data.type === "error") {
+                    throw new Error(data.message);
+                  }
+                } catch (e) {
+                  console.error("Error parsing stream chunk:", e);
+                }
+              }
+            }
+          }
+        } else {
+           throw new Error(await aiResponseRes.text());
+        }
       } else {
         aiResponseRes = await fetch("/api/ai-writer", {
           method: "POST",
@@ -480,14 +555,25 @@ const ChatInterface = () => {
             docData: docData ? docData.replace(/<<EOT|EOT/g, "").trim() : "",
           }),
         });
+        if (aiResponseRes.ok) {
+          aiData = await aiResponseRes.json();
+        } else {
+          throw new Error("Failed to get ai writer response");
+        }
       }
-      let aiData = null;
-      if (aiResponseRes.ok) {
-        aiData = await aiResponseRes.json();
-      } else {
-        throw new Error(aiResponseRes.error);
-      }
-      if (aiData?.data) {
+
+      if (aiData?.data?.streamed) {
+        // Message already rendered via token stream — just persist to DB
+        await sendMessage({
+          chatbot_id: chatbotId || newChatBotId.current,
+          message: streamedTextRef.current || "Here are the results of paper search",
+          sender: "assistant",
+          session_id: Date.now().toString(),
+        });
+        if (aiData?.data?.toolResult) {
+          fetchPaperData(chatbotId || newChatBotId.current);
+        }
+      } else if (aiData?.data) {
         let aiMessage = null;
         if (mode === "writer") {
           setOldDocData(
@@ -796,7 +882,7 @@ const ChatInterface = () => {
             <FileText size={18} />
             Document Editor
           </button>
-          <button
+          {/* <button
             onClick={() => handleActiveTab("review")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "review"
@@ -806,7 +892,7 @@ const ChatInterface = () => {
           >
             <BookOpen size={18} />
             Systematic Review
-          </button>
+          </button> */}
         </div>
       </nav>
 
@@ -1053,7 +1139,7 @@ const ChatInterface = () => {
           style={{ width: rightWidth }}
         >
           <div
-            className={`w-full h-full relative flex flex-col  overflow-hidden py-8 md:px-16 px-4  max-w-5xl mx-auto ${
+            className={`w-full h-full relative flex flex-col  overflow-hidden py-8 md:px-16 px-4  mx-auto ${
               !(messages && messages.length > 0) && "justify-center"
             }`}
           >
@@ -1073,13 +1159,13 @@ const ChatInterface = () => {
             >
               {(!messages || messages.length <= 0) && (
                 <div className="flex flex-col justify-center items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                    <GraduationCap size={32} className="text-white" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                    <GraduationCap size={24} className="text-white" />
                   </div>
-                  <h1 className="text-3xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-600">
+                  <h1 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-600">
                     How can I help you?
                   </h1>
-                  <p className="text-gray-600 text-center max-w-md">
+                  <p className="text-gray-600 text-center text-sm max-w-md">
                     Ask me anything about your research, or let me help you with
                     literature reviews and document writing.
                   </p>
@@ -1116,27 +1202,27 @@ const ChatInterface = () => {
 
                     {isLoading && (
                       <div className="flex justify-start gap-4">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
-                          <GraduationCap size={20} className="text-white" />
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
+                          <GraduationCap size={16} className="text-white" />
                         </div>
-                        <div className="px-5 py-3.5 rounded-2xl rounded-tl-none bg-white border border-gray-200 shadow-md">
+                        <div className="px-4 py-2 rounded-xl rounded-tl-none bg-white border border-gray-200 shadow-sm">
                           <div className="flex items-center gap-2">
                             <div className="flex gap-1">
                               <span
-                                className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+                                className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
                                 style={{ animationDelay: "0s" }}
                               ></span>
                               <span
-                                className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+                                className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
                                 style={{ animationDelay: "0.2s" }}
                               ></span>
                               <span
-                                className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+                                className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
                                 style={{ animationDelay: "0.4s" }}
                               ></span>
                             </div>
-                            <span className="text-gray-600 text-sm ml-2">
-                              Generating answer...
+                            <span className="text-gray-600 text-xs ml-2">
+                              {loadingStepText}
                             </span>
                           </div>
                         </div>
@@ -1150,23 +1236,25 @@ const ChatInterface = () => {
             {/* Input Area - FIXED: Removed sticky positioning that can cause issues */}
             <div className="chatinputarea w-full  ">
               <div className="border-t  rounded-xl bg-white backdrop-blur-sm container mx-auto p-4 shadow-lg">
-                <div className="flex gap-3">
-                  <Input
+                <div className="flex gap-3 items-end">
+                  <Textarea
                     ref={inputElementRef}
-                    defaultValue=""
                     onChange={(e) => {
                       inputRef.current = e.target.value;
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
                     }}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyPress}
                     placeholder="Ask anything..."
-                    className="flex-1"
+                    className="flex-1 text-sm min-h-[44px] max-h-[200px] resize-none"
+                    rows={1}
                   />
                   <Button
                     onClick={handleSendMessage}
                     disabled={isLoading}
-                    className="gap-2 bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white cursor-pointer"
+                    className="gap-2 bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white cursor-pointer text-sm h-[44px]"
                   >
-                    <Send className="h-5 w-5" />
+                    <Send className="h-4 w-4" />
                     <span className="hidden sm:block"> Send </span>
                   </Button>
                 </div>

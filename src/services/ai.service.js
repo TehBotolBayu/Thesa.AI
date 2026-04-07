@@ -12,6 +12,7 @@ import {
 } from "@langchain/core/messages";
 import { namesToFunctions, tools } from "./toolCallingService";
 import { rerankerService } from "./reranker.service";
+import { queryPineCone } from "@/services/pinecone";
 
 export async function getAIResponse(
   serialized,
@@ -68,7 +69,10 @@ export async function getAIPaperResponse(
       role: "system",
       content: systemPrompt,
     },
-  ]
+  ],
+  namespaces = [],
+  onProgress = () => {},
+  onToken = null
 ) {
   const memory = chatHistory.map((msg) => {
     switch (msg.type) {
@@ -84,6 +88,7 @@ export async function getAIPaperResponse(
   });
 
   let messages = [...memory];
+  onProgress("Analyzing request...");
   // Step A: Send user query to Mistral with tools
   let response = await mistralClient.chat.complete({
     model: "mistral-large-latest",
@@ -94,8 +99,63 @@ export async function getAIPaperResponse(
 
   const toolCall = response.choices[0].message.toolCalls?.[0];
 
-  // Step B: If no tool call → return model’s direct answer
+  // Step B: If no tool call → return model’s direct answer (stream-eligible)
   if (!toolCall) {
+    if (namespaces && namespaces.length > 0) {
+      onProgress("Retrieving relevant information...");
+      const promises = namespaces.map((ns) => queryPineCone("convi", userPrompt, ns));
+      const contexts = (await Promise.all(promises)).filter(c => c && c.trim().length > 0);
+      const combinedContext = contexts.join("\n\n");
+
+      if (combinedContext) {
+        messages.push({
+          role: "system",
+          content: `Here is the relevant context from the user's existing papers:\n${combinedContext}\n\nPlease generate an answer for the user based on the context above. If the context doesn't contain the answer, you can respond generally or say you don't know.`
+        });
+
+        onProgress("Generating relevant answer...");
+        if (onToken) {
+          let fullAnswer = "";
+          const streamRes = await mistralClient.chat.stream({
+            model: "mistral-large-latest",
+            messages,
+          });
+          for await (const chunk of streamRes) {
+            const token = chunk.data.choices[0]?.delta?.content || "";
+            if (token) {
+              fullAnswer += token;
+              onToken(token);
+            }
+          }
+          return { finalAnswer: fullAnswer, toolResult: null, streamed: true };
+        }
+        const finalResponse = await mistralClient.chat.complete({
+          model: "mistral-large-latest",
+          messages,
+        });
+        return {
+          finalAnswer: finalResponse.choices[0].message.content,
+          toolResult: null,
+        };
+      }
+    }
+
+    onProgress("Generating relevant answer...");
+    if (onToken) {
+      let fullAnswer = "";
+      const streamRes = await mistralClient.chat.stream({
+        model: "mistral-large-latest",
+        messages,
+      });
+      for await (const chunk of streamRes) {
+        const token = chunk.data.choices[0]?.delta?.content || "";
+        if (token) {
+          fullAnswer += token;
+          onToken(token);
+        }
+      }
+      return { finalAnswer: fullAnswer, toolResult: null, streamed: true };
+    }
     return {
       finalAnswer: response.choices[0].message.content,
       toolResult: null,
@@ -104,6 +164,7 @@ export async function getAIPaperResponse(
 
   // Step C: Run the tool
   const functionName = toolCall.function.name;
+  onProgress(`Using tool: ${functionName}...`);
   const functionParams = JSON.parse(toolCall.function.arguments);
   const functionResult = await namesToFunctions[functionName](functionParams);
 
@@ -121,6 +182,7 @@ export async function getAIPaperResponse(
     // },
   }));
 
+  onProgress("Reranking relevant documents...");
   const rerankedToolResult = await rerankerService(rerankerInput, query);
 
   const dataSummary = rerankedToolResult.map((item) => item.dataSummary);
@@ -152,6 +214,7 @@ export async function getAIPaperResponse(
   });
 
   // Step E: Get final AI answer
+  onProgress("Generating relevant answer...");
   response = await mistralClient.chat.complete({
     model: "mistral-large-latest",
     messages,
