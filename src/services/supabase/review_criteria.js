@@ -28,7 +28,7 @@ export const ReviewCriteriaService = {
     let query = createClient()
     .from(TABLE_NAME)
     .select("*")
-    .single();
+    .maybeSingle();
 
     if (chatbot_id) query = query.eq("chatbot_id", chatbot_id);
 

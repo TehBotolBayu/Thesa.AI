@@ -2,6 +2,7 @@ import { pinecone } from "@/config/pinecone";
 import { unicodeToAscii } from "@/lib/general/parser";
 import { embeddings } from "@/lib/llm/model";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import { logDev } from "@/lib/logger";
 
 export const queryPineCone = async (indexName, userQuery, namespace) => {
   let relevantContext = "";
@@ -10,7 +11,7 @@ export const queryPineCone = async (indexName, userQuery, namespace) => {
     // Create query embedding
     const queryEmbedding = await embeddings.embedQuery(userQuery);
 
-    console.log(`[Pinecone Request] Index: ${indexName}, Namespace: ${namespace}, Query: ${userQuery}`);
+    logDev(`[Pinecone Request] Index: ${indexName}, Namespace: ${namespace}, Query: ${userQuery}`);
 
     // Query Pinecone for similar documents
     const queryResponse = await index.query({
@@ -20,7 +21,7 @@ export const queryPineCone = async (indexName, userQuery, namespace) => {
       namespace: namespace,
     });
 
-    console.log(`[Pinecone Response] Namespace: ${namespace}, Matches:`, JSON.stringify(queryResponse, null, 2));
+    logDev(`[Pinecone Response] Namespace: ${namespace}, Matches:`, JSON.stringify(queryResponse, null, 2));
 
     // Extract relevant context from retrieved documents
     if (queryResponse.matches && queryResponse.matches.length > 0) {
@@ -30,7 +31,7 @@ export const queryPineCone = async (indexName, userQuery, namespace) => {
         .filter((content) => typeof content === "string" && content.length > 0);
 
       relevantContext = contextParts.join("\n\n");
-      console.log(
+      logDev(
         `Retrieved ${contextParts.length} relevant context parts from Pinecone namespace: ${namespace}`
       );
     }
@@ -45,10 +46,10 @@ export const queryPineCone = async (indexName, userQuery, namespace) => {
 };
 
 export const batchUpsertPineCone = async (title, content, namespace) => {
-  console.log('bacthUpsert')
-  console.log(title)
-  console.log(content)
-  console.log(namespace)
+  logDev('bacthUpsert')
+  logDev(title)
+  logDev(content)
+  logDev(namespace)
   try {
     // Get Pinecone index
     const index = pinecone.index("convi");
@@ -78,10 +79,10 @@ export const batchUpsertPineCone = async (title, content, namespace) => {
       },
     }));
     // Upsert vectors into Pinecone with namespace (if provided)
-    console.log("namespace:", namespace);
+    logDev("namespace:", namespace);
     const namespaceIndex = index.namespace(namespace);
     await namespaceIndex.upsert(vectors);
-    console.log(
+    logDev(
       `Successfully stored document "${title}" with ${
         chunks.length
       } chunks in Pinecone (namespace: ${namespace || "default"})`

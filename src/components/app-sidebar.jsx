@@ -12,16 +12,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Home, LogIn, LogOutIcon, User } from "lucide-react";
+import { Home, LogIn, LogOutIcon, Pencil, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 // Menu items.
 const items = [
   {
-    title: "Home",
+    title: "New Chat",
     url: "/",
-    icon: Home,
+    icon: Pencil,
   },
 ];
 
@@ -62,12 +62,12 @@ export function AppSidebar() {
       {pathname !== "/login" && pathname !== "/register" && (
         <Sidebar>
           <SidebarContent>
-            <SidebarGroup  className="bg-red-500 sticky top-0  bg-white z-1">
+            <SidebarGroup className="bg-red-500 sticky top-0  bg-white z-1">
               <SidebarGroupLabel>
                 {/* <div className="flex"> */}
-                  <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-600 text-2xl font-extrabold my-6">
-                    Thesa.AI
-                  </h1>
+                <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-600 text-2xl font-extrabold my-6">
+                  Thesa.AI
+                </h1>
                 {/* </div> */}
               </SidebarGroupLabel>
               <SidebarGroupContent>

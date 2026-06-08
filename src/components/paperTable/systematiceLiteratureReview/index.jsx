@@ -11,17 +11,17 @@ const SystematicLiteratureReviewPaperTable = ({
   const [selectedData, setSelectedData] = useState([]);
 
   const { flattenedData, columnRenderer } = useMemo(() => {
-    console.log("tableRowData: ", JSON.stringify(tableRowData, null, 2));
-    console.log("paperData: ", JSON.stringify(paperData, null, 2));
+    logDev("tableRowData: ", JSON.stringify(tableRowData, null, 2));
+    logDev("paperData: ", JSON.stringify(paperData, null, 2));
     const flattenedData = tableRowData.map((item) => {
       const result = flattenExtractedData(item);
       const paper = paperData.find((p) => p.id === result.paperId);
       return {
         ...result,
-         paper: paper?.title,
+        paper: paper?.title,
       };
     });
-    console.log("flattenedData: ", JSON.stringify(flattenedData, null, 2));
+    logDev("flattenedData: ", JSON.stringify(flattenedData, null, 2));
     let columnRenderer = tableRowData?.[0].data.map((item) => ({
       header: item.label.charAt(0).toUpperCase() + item.label.slice(1),
       key: item.label.toLowerCase(),
@@ -32,7 +32,7 @@ const SystematicLiteratureReviewPaperTable = ({
         </div>
       ),
     }));
-    if(paperData.length > 0) {
+    if (paperData.length > 0) {
       columnRenderer = [{
         header: "Paper",
         key: "paper",

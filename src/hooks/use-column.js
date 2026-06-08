@@ -2,6 +2,7 @@
 
 "use client";
 
+import { logDev } from "@/lib/logger";
 import { useState } from "react";
 
 export function useColumn() {
@@ -60,7 +61,7 @@ export function useColumn() {
   }
 
   function mapListPaperColumnValues(papers, columns, values) {
-    console.log('vales here: ', JSON.stringify(values, 2, null))
+    logDev('vales here: ', JSON.stringify(values, 2, null))
     if (!papers || !columns || !values) return;
     const map = {};
     for (const paper of papers) {

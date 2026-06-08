@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./styles.css";
+import { logDev } from "@/lib/logger";
 
 const notShowColumn = [
   "extract_data",
@@ -17,7 +18,7 @@ const PaperTable = ({
   paperColumnValuesMap,
 }) => {
   useEffect(() => {
-    console.log(
+    logDev(
       "tableRowData data in papertable: ",
       JSON.stringify(tableRowData, null, 2)
     );

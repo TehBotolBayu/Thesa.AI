@@ -8,7 +8,7 @@ import { batchUpsertPineCone } from "@/services/pinecone";
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { serialized, message, chatbotId, namespaces } = body;
+    const { serialized, message, chatbotId, namespaces, paperData: reqPaperData } = body;
     if (!message) {
       return NextResponse.json(
         { error: "message is required" },
@@ -32,31 +32,11 @@ export async function POST(req) {
 
         try {
           const prompt = `${message}`;
-          const response = await getAIPaperResponse(prompt, serialized, namespaces, sendProgress, sendToken);
+          const response = await getAIPaperResponse(prompt, serialized, namespaces, sendProgress, sendToken, reqPaperData);
 
           const paperData = await response?.toolResult;
 
           if (paperData && Array.isArray(paperData)) {
-            const pdfTexts = [];
-            for (let i = 0; i < paperData.length; i++) {
-              const paper = paperData[i];
-              if (!paper.pdfUrl) continue;
-              sendProgress(`Extracting and storing document (${i + 1}/${paperData.length})...`);
-              console.log("extracting paper: ", paper.title, " from: ", paper.pdfUrl);
-              let pdfText;
-              try {
-                pdfText = await extractPdfTextFromUrl(paper.pdfUrl);
-              } catch (err) {
-                console.error("PDF Extraction failed for:", paper.pdfUrl, err);
-                continue;
-              }
-
-              const result = await batchUpsertPineCone(paper.title, pdfText, paper.pdfUrl);
-              console.log("pinecone result: ", result)
-              pdfTexts.push(pdfText);
-            }
-            console.log("pdfTexts:", pdfTexts.length);
-
             if (chatbotId) {
               sendProgress("Saving papers to database...");
               const paperDataWithChatbotId = paperData.map((paper) => ({

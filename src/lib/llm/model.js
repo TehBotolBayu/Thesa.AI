@@ -1,22 +1,20 @@
-import { ChatMistralAI, MistralAIEmbeddings } from "@langchain/mistralai";
-import { Mistral } from "@mistralai/mistralai";
-// import { ChatDeepSeek } from "@langchain/deepseek";
+import { ChatOpenAI } from "@langchain/openai";
+import { MistralAIEmbeddings } from "@langchain/mistralai";
 
-export const llm = new ChatMistralAI({
-  model: "mistral-large-latest",
-  // model: "mistral-large-latest",
-  // model: "mistral-small-latest",
+// Initialize OpenRouter model using LangChain's ChatOpenAI
+export const llm = new ChatOpenAI({
+  modelName: process.env.OPENROUTER_MODEL || "openai/gpt-4o",
   temperature: 0,
+  apiKey: process.env.OPENROUTER_API_KEY,
+  configuration: {
+    baseURL: process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
+    defaultHeaders: {
+      "HTTP-Referer": process.env.SITE_URL || "http://localhost:3000",
+      "X-Title": "Thesa.AI",
+    },
+  },
 });
 
 export const embeddings = new MistralAIEmbeddings({
   model: "mistral-embed",
 });
-
-export const mistralClient = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
-
-
-// export const deepseekLLM = new ChatDeepSeek({
-//   model: "deepseek-reasoner",
-//   temperature: 0,
-// });

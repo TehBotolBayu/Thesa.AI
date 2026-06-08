@@ -3,6 +3,7 @@ import "../styles.css";
 import PaperTable from "..";
 import MarkdownParser from "@/components/ui/markdownParser";
 import { ColumnSkeleton } from "@/components/ui/skeletons/columnSkeleton";
+import { logDev } from "@/lib/logger";
 
 const notShowColumn = [
   "extract_data",
@@ -45,9 +46,8 @@ const AcademicPaperTable = ({
       render: (value, paperId) => (
         <div className="flex justify-center">
           <span
-            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-              value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-            }`}
+            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+              }`}
           >
             <svg
               className="w-3 h-3 mr-1"
@@ -192,7 +192,7 @@ const AcademicPaperTable = ({
   }, [tableData, additionalColumn]);
 
   useEffect(() => {
-    console.log(
+    logDev(
       "paperColumnValuesMap data in academicpapertable: ",
       paperColumnValuesMap
     );

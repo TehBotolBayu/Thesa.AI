@@ -246,11 +246,11 @@ const ChatInterface = () => {
         setChatbotId(id);
         initChatData(id);
         fetchPaperData(id);
-        try {
-          fetchReviewCriteria(id);
-        } catch (error) {
-          console.error("Error fetching review criteria: ", error);
-        }
+        // try {
+        //   fetchReviewCriteria(id);
+        // } catch (error) {
+        //   console.error("Error fetching review criteria: ", error);
+        // }
       }
     })();
   }, [id, user]);
@@ -331,7 +331,7 @@ const ChatInterface = () => {
   // }, [openProp]);
 
   // new one, not quite working
-    useEffect(() => {
+  useEffect(() => {
     (() => {
       // const containerRect = containerRef.current.getBoundingClientRect();
 
@@ -469,6 +469,7 @@ const ChatInterface = () => {
         message: userMessage.message,
         chatbotId: chatbotId || newChatBotId.current,
         namespaces: paperData && Array.isArray(paperData) ? paperData.filter(p => p.pdfUrl).map(p => p.pdfUrl) : [],
+        paperData: paperData && Array.isArray(paperData) ? paperData : [],
       };
 
       let aiResponseRes = null;
@@ -544,7 +545,7 @@ const ChatInterface = () => {
             }
           }
         } else {
-           throw new Error(await aiResponseRes.text());
+          throw new Error(await aiResponseRes.text());
         }
       } else {
         aiResponseRes = await fetch("/api/ai-writer", {
@@ -844,8 +845,8 @@ const ChatInterface = () => {
     ws.onopen = () => {
       ws.send("Hello, WebSocket!");
     };
-    ws.onmessage = (event) => {};
-    ws.onclose = () => {};
+    ws.onmessage = (event) => { };
+    ws.onclose = () => { };
     return () => {
       ws.close();
     };
@@ -862,16 +863,15 @@ const ChatInterface = () => {
         <div className="flex gap-4 w-full justify-center flex-row space-x-2">
           <button
             onClick={() => handleActiveTab("research")}
-            className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
-              activeTab === "research"
+            className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${activeTab === "research"
                 ? "border-blue-500 text-blue-600 "
                 : "border-transparent text-gray-600 hover:text-blue-600"
-            }`}
+              }`}
           >
             <Search size={18} />
             Search Results
           </button>
-          <button
+          {/* <button
             onClick={() => handleActiveTab("editor")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
               activeTab === "editor"
@@ -881,7 +881,7 @@ const ChatInterface = () => {
           >
             <FileText size={18} />
             Document Editor
-          </button>
+          </button> */}
           {/* <button
             onClick={() => handleActiveTab("review")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
@@ -1139,18 +1139,16 @@ const ChatInterface = () => {
           style={{ width: rightWidth }}
         >
           <div
-            className={`w-full h-full relative flex flex-col  overflow-hidden py-8 md:px-16 px-4  mx-auto ${
-              !(messages && messages.length > 0) && "justify-center"
-            }`}
+            className={`w-full h-full relative flex flex-col  overflow-hidden py-8 md:px-16 px-4  mx-auto ${!(messages && messages.length > 0) && "justify-center"
+              }`}
           >
             <div
               ref={chatContainerRef}
               className={`overflow-x-hidden overflow-y-scroll container mx-auto px-1 py-6   
-              ${
-                messages && messages.length > 0
+              ${messages && messages.length > 0
                   ? "flex-1"
                   : " h-fit flex items-center flex-col justify-center hide-scrollbar"
-              }
+                }
               `}
               style={{
                 scrollBehavior: "smooth",

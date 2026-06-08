@@ -5,6 +5,7 @@ import "katex/dist/katex.min.css";
 import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
+import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 
 // URL Detection utility
@@ -19,7 +20,7 @@ const MarkdownParser = ({ content, ...props }) => {
 
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkMath]}
+      remarkPlugins={[remarkMath, remarkGfm]}
       rehypePlugins={[rehypeKatex]}
       components={{
         // Custom link component with styling
@@ -35,18 +36,46 @@ const MarkdownParser = ({ content, ...props }) => {
         li: ({ children }) => <li className="mb-1 text-sm">{children}</li>,
         code: ({ inline, children }) =>
           inline ? (
-            <code className="bg-gray-700 px-1 py-0.5 rounded text-sm">
+            <code className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-1 py-0.5 rounded text-sm font-mono border border-gray-200 dark:border-gray-700">
               {children}
             </code>
           ) : (
-            <code className="block bg-gray-700 p-2 rounded text-sm overflow-x-auto">
+            <code className="text-sm font-mono">
               {children}
             </code>
           ),
         pre: ({ children }) => (
-          <pre className="bg-gray-700 p-2 rounded overflow-x-auto mb-2">
+          <pre className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto mb-2 border border-gray-200 dark:border-gray-700">
             {children}
           </pre>
+        ),
+        table: ({ children }) => (
+          <div className="overflow-x-auto mb-4">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-md text-sm">
+              {children}
+            </table>
+          </div>
+        ),
+        thead: ({ children }) => (
+          <thead className="bg-gray-50 dark:bg-gray-800">
+            {children}
+          </thead>
+        ),
+        tbody: ({ children }) => (
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
+            {children}
+          </tbody>
+        ),
+        tr: ({ children }) => <tr>{children}</tr>,
+        th: ({ children }) => (
+          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
+            {children}
+          </th>
+        ),
+        td: ({ children }) => (
+          <td className="px-4 py-2 whitespace-normal text-sm text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700">
+            {children}
+          </td>
         ),
       }}
     >
