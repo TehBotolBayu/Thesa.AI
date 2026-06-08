@@ -864,8 +864,8 @@ const ChatInterface = () => {
           <button
             onClick={() => handleActiveTab("research")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${activeTab === "research"
-                ? "border-blue-500 text-blue-600 "
-                : "border-transparent text-gray-600 hover:text-blue-600"
+              ? "border-blue-500 text-blue-600 "
+              : "border-transparent text-gray-600 hover:text-blue-600"
               }`}
           >
             <Search size={18} />
@@ -1257,7 +1257,7 @@ const ChatInterface = () => {
                   </Button>
                 </div>
                 {/* create dropdown for selecting the chat */}
-                <div className="max-w-64 w-fit mt-4">
+                {/* <div className="max-w-64 w-fit mt-4">
                   <DropdownSelect
                     placeholder="Select a Mode"
                     setSelectedValue={setMode}
@@ -1266,7 +1266,7 @@ const ChatInterface = () => {
                       { value: "writer", label: "Writer Mode" },
                     ]}
                   />
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
