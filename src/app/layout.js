@@ -55,7 +55,7 @@ export default async function RootLayout({ children }) {
           <SidebarProvider>
             <AppSidebar />
             <main className="w-full relative">
-              <SidebarTrigger className={"fixed z-100 "} />
+              <SidebarTrigger className={"fixed z-[100] md:z-50 bg-white/80 backdrop-blur-sm rounded-md shadow-sm m-2"} />
               {children}
             </main>
           </SidebarProvider>

@@ -17,6 +17,7 @@ import {
   Search,
   Send,
   Trash,
+  MessageSquare,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -280,9 +281,11 @@ const ChatInterface = () => {
 
   useEffect(() => {
     if (paperData && paperData.length > 0) {
-      setActiveTab("research");
+      if (!openProp.isMobile) {
+        setActiveTab("research");
+      }
     }
-  }, [paperData]);
+  }, [paperData, openProp.isMobile]);
 
   useEffect(() => {
     const scrollToBottom = () => {
@@ -335,10 +338,10 @@ const ChatInterface = () => {
     (() => {
       // const containerRect = containerRef.current.getBoundingClientRect();
 
-      if (openProp.state == "expanded") {
+      if (openProp.state == "expanded" && !openProp.isMobile) {
         setContainerWidth("w-[calc(100vw-256px)]");
       } else {
-        setContainerWidth("w-screen");
+        setContainerWidth("w-full");
       }
     })();
   }, [openProp, containerRef]);
@@ -871,6 +874,16 @@ const ChatInterface = () => {
             <Search size={18} />
             Search Results
           </button>
+          <button
+            onClick={() => handleActiveTab("chat")}
+            className={`md:hidden py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${activeTab === "chat"
+              ? "border-blue-500 text-blue-600 "
+              : "border-transparent text-gray-600 hover:text-blue-600"
+              }`}
+          >
+            <MessageSquare size={18} />
+            Chat
+          </button>
           {/* <button
             onClick={() => handleActiveTab("editor")}
             className={`py-3 px-4 border-b-2 font-semibold text-sm flex items-center gap-2 transition-all duration-200 ${
@@ -898,15 +911,16 @@ const ChatInterface = () => {
 
       <div
         ref={containerRef}
-        className={`flex border h-full ${containerWidth}`}
+        className={`flex flex-col md:flex-row border h-full ${containerWidth}`}
         style={{ userSelect: isDragging.current ? "none" : "auto" }}
       >
         {/* second Panel */}
         {activeTab === "research" && (
           <>
             <div
-              className="bg-chatbg overflow-auto hide-scrollbar "
-              style={{ width: leftWidth }}
+              className={`bg-chatbg overflow-auto hide-scrollbar transition-all duration-300 ${
+                leftWidth === 0 ? "hidden md:block md:w-0" : "w-full h-full md:w-[70%]"
+              }`}
             >
               <div className="bg-gradient-to-r from-blue-50 to-blue-50 px-6 py-5 border-b border-gray-200">
                 <h1 className="text-2xl font-semibold text-gray-900 mb-3">
@@ -983,8 +997,10 @@ const ChatInterface = () => {
         {activeTab === "editor" && (
           <>
             <div
-              className="bg-white h-full overflow-auto overflow-x-auto"
-              style={{ width: leftWidth, whiteSpace: "nowrap" }}
+              className={`bg-white overflow-auto overflow-x-auto transition-all duration-300 ${
+                leftWidth === 0 ? "hidden md:block md:w-0" : "w-full h-full md:w-[70%]"
+              }`}
+              style={{ whiteSpace: "nowrap" }}
             >
               <div className="bg-gradient-to-r from-blue-50 to-blue-50 py-4 px-6 flex flex-row gap-3 w-full items-center border-b border-gray-200">
                 <div>
@@ -1052,8 +1068,9 @@ const ChatInterface = () => {
         {activeTab === "review" && (
           <>
             <div
-              className="bg-chatbg h-full w-full overflow-auto overflow-x-auto"
-              style={{ width: leftWidth }}
+              className={`bg-chatbg overflow-auto overflow-x-auto transition-all duration-300 ${
+                leftWidth === 0 ? "hidden md:block md:w-0" : "w-full h-full md:w-[70%]"
+              }`}
             >
               <div className="bg-gradient-to-r from-blue-50 to-blue-50 px-6 py-5 border-b border-gray-200">
                 <StepProgressBar
@@ -1125,8 +1142,8 @@ const ChatInterface = () => {
           </>
         )}
 
-        {leftWidth !== 0 && activeTab.trim() !== "" && (
-          <div className="absolute top-[50%] translate-y-[-50%] right-[28%] cursor-pointer z-100">
+        {leftWidth !== 0 && activeTab.trim() !== "" && activeTab !== "chat" && (
+          <div className="absolute top-[50%] translate-y-[-50%] right-[28%] cursor-pointer z-[100] hidden md:block">
             <CollapseButton
               onClick={() => setLeftWidth(leftWidth === 0 ? "70%" : 0)}
             />
@@ -1135,8 +1152,7 @@ const ChatInterface = () => {
 
         {/* first Panel */}
         <div
-          className={`flex-1 h-full  overflow-auto `}
-          style={{ width: rightWidth }}
+          className={`flex-1 w-full h-full overflow-auto ${activeTab !== "chat" ? "hidden md:flex md:flex-col" : "flex flex-col"}`}
         >
           <div
             className={`w-full h-full relative flex flex-col  overflow-hidden py-8 md:px-16 px-4  mx-auto ${!(messages && messages.length > 0) && "justify-center"

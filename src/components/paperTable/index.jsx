@@ -25,12 +25,12 @@ const PaperTable = ({
   }, [tableRowData]);
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 overflow-x-auto overflow-y-hidden ">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 overflow-x-auto overflow-y-hidden w-full">
       {tableRowData && (
-        <div className="mx-auto">
-          <div className="bg-white rounded-xl shadow-lg overflow-x-auto overflow-y-hidden border border-gray-200">
-            <div className="h-[calc(100vh-212px)] overflow-y-scroll">
-              <table className="w-full">
+        <div className="mx-auto w-full">
+          <div className="bg-white rounded-xl shadow-lg overflow-x-auto border border-gray-200 w-full">
+            <div className="h-[calc(100vh-212px)] overflow-y-auto">
+              <table className="w-full min-w-max">
                 <thead>
                   <tr className="bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-200">
                     {selectedData && (

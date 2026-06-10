@@ -215,7 +215,7 @@ function Sidebar({
 }
 
 function SidebarTrigger({ className, onClick, ...props }) {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, isMobile, openMobile } = useSidebar();
   const pathname = usePathname()
   return (
     <>
@@ -225,7 +225,7 @@ function SidebarTrigger({ className, onClick, ...props }) {
           data-slot="sidebar-trigger"
           variant="ghost"
           size="icon"
-          className={cn("size-7", className)}
+          className={cn("size-7 transition-all duration-300", isMobile && openMobile ? "translate-x-[18rem]" : "translate-x-0", className)}
           onClick={(event) => {
             onClick?.(event);
             toggleSidebar();

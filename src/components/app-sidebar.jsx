@@ -62,7 +62,7 @@ export function AppSidebar() {
       {pathname !== "/login" && pathname !== "/register" && (
         <Sidebar>
           <SidebarContent>
-            <SidebarGroup className="bg-red-500 sticky top-0  bg-white z-1">
+            <SidebarGroup className="sticky top-0 bg-white z-10">
               <SidebarGroupLabel>
                 {/* <div className="flex"> */}
                 <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-600 text-2xl font-extrabold my-6">
