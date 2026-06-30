@@ -918,9 +918,8 @@ const ChatInterface = () => {
         {activeTab === "research" && (
           <>
             <div
-              className={`bg-chatbg overflow-auto hide-scrollbar transition-all duration-300 ${
-                leftWidth === 0 ? "hidden md:block md:w-0" : "w-full h-full md:w-[70%]"
-              }`}
+              className={`bg-chatbg overflow-auto hide-scrollbar transition-all duration-300 ${leftWidth === 0 ? "hidden md:block md:w-0" : "w-full h-full md:w-[70%]"
+                }`}
             >
               <div className="bg-gradient-to-r from-blue-50 to-blue-50 px-6 py-5 border-b border-gray-200">
                 <h1 className="text-2xl font-semibold text-gray-900 mb-3">
@@ -997,9 +996,8 @@ const ChatInterface = () => {
         {activeTab === "editor" && (
           <>
             <div
-              className={`bg-white overflow-auto overflow-x-auto transition-all duration-300 ${
-                leftWidth === 0 ? "hidden md:block md:w-0" : "w-full h-full md:w-[70%]"
-              }`}
+              className={`bg-white overflow-auto overflow-x-auto transition-all duration-300 ${leftWidth === 0 ? "hidden md:block md:w-0" : "w-full h-full md:w-[70%]"
+                }`}
               style={{ whiteSpace: "nowrap" }}
             >
               <div className="bg-gradient-to-r from-blue-50 to-blue-50 py-4 px-6 flex flex-row gap-3 w-full items-center border-b border-gray-200">
@@ -1068,9 +1066,8 @@ const ChatInterface = () => {
         {activeTab === "review" && (
           <>
             <div
-              className={`bg-chatbg overflow-auto overflow-x-auto transition-all duration-300 ${
-                leftWidth === 0 ? "hidden md:block md:w-0" : "w-full h-full md:w-[70%]"
-              }`}
+              className={`bg-chatbg overflow-auto overflow-x-auto transition-all duration-300 ${leftWidth === 0 ? "hidden md:block md:w-0" : "w-full h-full md:w-[70%]"
+                }`}
             >
               <div className="bg-gradient-to-r from-blue-50 to-blue-50 px-6 py-5 border-b border-gray-200">
                 <StepProgressBar

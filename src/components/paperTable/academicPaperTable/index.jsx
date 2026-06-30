@@ -26,9 +26,9 @@ const AcademicPaperTable = ({
     {
       header: "Title",
       key: "title",
-      className: "w-1/4",
+      className: "w-[200px]",
       render: (value, paperId) => (
-        <div className="w-[320px] leading-relaxed font-medium">{value}</div>
+        <div className=" leading-relaxed font-medium">{value}</div>
       ),
     },
     {
@@ -42,7 +42,7 @@ const AcademicPaperTable = ({
     {
       header: "Open Access",
       key: "isOpenAccess",
-      className: "w-1/8 text-center",
+      className: "w-[200px] text-center",
       render: (value, paperId) => (
         <div className="flex justify-center">
           <span
@@ -76,7 +76,7 @@ const AcademicPaperTable = ({
     {
       header: "PDF URL",
       key: "pdfUrl",
-      className: "w-1/6",
+      className: "w-[200px]",
       render: (value, paperId) => (
         <>
           {value && (
@@ -108,7 +108,7 @@ const AcademicPaperTable = ({
     {
       header: "Authors",
       key: "authors",
-      className: "w-1/6",
+      className: "w-[200px]",
       render: (value, paperId) => (
         <div className="max-h-48 flex flex-wrap gap-1">
           {value.map((author, index) => (

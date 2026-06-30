@@ -34,7 +34,7 @@ const PaperTable = ({
                 <thead>
                   <tr className="bg-gradient-to-r from-blue-50 to-blue-50 border-b border-gray-200">
                     {selectedData && (
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"></th>
+                      <th className="w-12 px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"></th>
                     )}
                     {cellRenderer.map((column) => (
                       <th
@@ -54,7 +54,7 @@ const PaperTable = ({
                     >
                       {selectedData && (
                         <td
-                          className={`px-6 py-6 text-sm text-gray-900 align-top`}
+                          className={`w-12 px-6 py-6 text-sm text-gray-900 align-top`}
                         >
                           <input
                             type="checkbox"
